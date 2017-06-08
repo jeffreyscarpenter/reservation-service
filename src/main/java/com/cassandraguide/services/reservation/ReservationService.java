@@ -111,7 +111,7 @@ public class ReservationService {
 
         // TODO: use PreparedStatement to create a BoundStatement for inserting the reservation
         // For this exercise we will insert only into the reservations_by_confirmation table
-        // Hint: convert the start date and end dates to Strings
+        // Hint: use provided convenience function convertJavaLocalDateToDataStax for start and end dates
         reservationsByConfirmationInsert = reservationsByConfirmationInsertPrepared.bind(
                 reservation.getConfirmationNumber(),
                 reservation.getHotelId(),
@@ -180,7 +180,7 @@ public class ReservationService {
 
         // TODO: use PreparedStatement to create a BoundStatement for updating the reservation
         // For this exercise we will insert only into the reservations_by_confirmation table
-        // Hint: convert the start date and end dates to Strings
+        // Hint: use provided convenience function convertJavaLocalDateToDataStax for start and end dates
         reservationsByConfirmationUpdate = reservationsByConfirmationUpdatePrepared.bind(
                 reservation.getConfirmationNumber(),
                 reservation.getHotelId(),
