@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalDate;
@@ -28,28 +29,63 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SimpleStatement;
+import com.datastax.driver.core.Statement;
+
+// TODO: add imports for PreparedStatement, BoundStatement
+import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.BoundStatement;
 
 @Component
 public class ReservationService {
 
     private static final Logger logger = LoggerFactory.getLogger(ReservationService.class);
 
-    // TODO: private variable to hold DataStax Java Driver Session - used for executing queries
+    // private variable to hold DataStax Java Driver Session - used for executing queries
     private Session session;
+
+    // TODO: declare variables for prepared statements: insert, select, update, select all, delete
+    private PreparedStatement reservationsByConfirmationInsertPrepared;
+    private PreparedStatement reservationsByConfirmationSelectPrepared;
+    private PreparedStatement reservationsByConfirmationUpdatePrepared;
+    private PreparedStatement reservationsByConfirmationSelectAllPrepared;
+    private PreparedStatement reservationsByConfirmationDeletePrepared;
 
     public ReservationService() {
 
-        // TODO: Create cluster with connection to localhost
+        // Create cluster with connection to localhost
         Cluster cluster = Cluster.builder()
                 .addContactPoint("127.0.0.1")
                 .build();
 
-        // TODO: Create session for reservation keyspace
+        // Create session for reservation keyspace
         session = cluster.connect("reservation");
+
+        // TODO: create prepared statement for inserting a new reservation
+        reservationsByConfirmationInsertPrepared = session.prepare(
+                "INSERT INTO reservations_by_confirmation (confirmation_number, hotel_id, start_date, " +
+                        "end_date, room_number, guest_id) VALUES (?, ?, ?, ?, ?, ?)");
+
+        // TODO: create prepared statement for retrieving a reservation
+        reservationsByConfirmationSelectPrepared = session.prepare(
+                "SELECT * FROM reservations_by_confirmation where confirmation_number=?");
+
+        // TODO: create prepared statement for retrieving all reservations
+        reservationsByConfirmationSelectAllPrepared = session.prepare(
+                "SELECT * FROM reservations_by_confirmation");
+
+        // TODO: create prepared statement for updating a reservation
+        reservationsByConfirmationUpdatePrepared = session.prepare(
+                "UPDATE reservations_by_confirmation SET hotel_id=?, start_date=?, " +
+                        "end_date=?, room_number=?, guest_id=? WHERE confirmation_number=?");
+
+        // TODO: create prepared statement for deleting a  reservation
+        reservationsByConfirmationDeletePrepared = session.prepare(
+                "DELETE FROM reservations_by_confirmation WHERE confirmation_number=?");
+
     }
 
     public String createReservation(Reservation reservation) {
+
 
         /*
          * Business Logic -
@@ -71,21 +107,20 @@ public class ReservationService {
         /*
          * Data Manipulation Logic
          */
+        Statement reservationsByConfirmationInsert = null;
 
-        // TODO: Construct SimpleStatement for inserting the reservation
+        // TODO: use PreparedStatement to create a BoundStatement for inserting the reservation
         // For this exercise we will insert only into the reservations_by_confirmation table
         // Hint: convert the start date and end dates to Strings
-        SimpleStatement reservationsByConfirmationInsert = new SimpleStatement(
-                "INSERT INTO reservations_by_confirmation (confirmation_number, hotel_id, start_date, " +
-                        "end_date, room_number, guest_id) VALUES (?, ?, ?, ?, ?, ?)",
+        reservationsByConfirmationInsert = reservationsByConfirmationInsertPrepared.bind(
                 reservation.getConfirmationNumber(),
                 reservation.getHotelId(),
-                reservation.getStartDate().toString(),
-                reservation.getEndDate().toString(),
+                convertJavaLocalDateToDataStax(reservation.getStartDate()),
+                convertJavaLocalDateToDataStax(reservation.getEndDate()),
                 reservation.getRoomNumber(),
                 reservation.getGuestId());
 
-        // TODO: Execute the statement
+        // Execute the statement
         session.execute(reservationsByConfirmationInsert);
 
         // Return the confirmation number that was created
@@ -99,27 +134,23 @@ public class ReservationService {
         /*
          * Data Manipulation Logic
          */
+        Statement reservationsByConfirmationSelect = null;
 
-        // TODO: Construct SimpleStatement for retrieving the reservation from the reservations_by_confirmation table
-        // Hint: Remember to use parameterization
-        SimpleStatement reservationsByConfirmationSelect = new SimpleStatement(
-                "SELECT * FROM reservations_by_confirmation where confirmation_number=?",
-                confirmationNumber);
+        // TODO: use PreparedStatement to create a BoundStatement for retrieving the reservation
+        // from the reservations_by_confirmation table
+        reservationsByConfirmationSelect = reservationsByConfirmationSelectPrepared.bind(confirmationNumber);
 
-        // TODO: Execute the statement
+        // Execute the statement
         ResultSet resultSet = session.execute(reservationsByConfirmationSelect);
         Row row = resultSet.one();
 
-        // TODO: Process the results (ResultSet)
+        // Process the results (ResultSet)
         // Hint: an empty result might not be an error as this method is sometimes used to check whether a
         // reservation with this confirmation number exists
         if (row == null) {
             logger.debug("Unable to load reservation with confirmation number: " + confirmationNumber);
         }
         else {
-            // Hint: If there is a result, create a new reservation object and set the values
-            // Bonus: factor the logic to extract a reservation from a row into a separate method
-            // (you will reuse it again later in getAllReservations())
             reservation = extractReservationFromRow(row);
         }
 
@@ -145,21 +176,20 @@ public class ReservationService {
         /*
          * Data Manipulation Logic
          */
+        Statement reservationsByConfirmationUpdate = null;
 
-        // TODO: Construct SimpleStatement for updating the reservation
+        // TODO: use PreparedStatement to create a BoundStatement for updating the reservation
         // For this exercise we will insert only into the reservations_by_confirmation table
-        SimpleStatement reservationsByConfirmationUpdate = new SimpleStatement(
-                "UPDATE reservations_by_confirmation SET hotel_id=?, start_date=?, " +
-                        "end_date=?, room_number=?, guest_id=? WHERE confirmation_number=?",
+        // Hint: convert the start date and end dates to Strings
+        reservationsByConfirmationUpdate = reservationsByConfirmationUpdatePrepared.bind(
+                reservation.getConfirmationNumber(),
                 reservation.getHotelId(),
-                reservation.getStartDate(),
-                reservation.getEndDate(),
+                convertJavaLocalDateToDataStax(reservation.getStartDate()),
+                convertJavaLocalDateToDataStax(reservation.getEndDate()),
                 reservation.getRoomNumber(),
-                reservation.getGuestId(),
-                reservation.getConfirmationNumber()
-        );
+                reservation.getGuestId());
 
-        // TODO: Execute the statement
+        // Execute the statement
         session.execute(reservationsByConfirmationUpdate);
     }
 
@@ -171,17 +201,17 @@ public class ReservationService {
         /*
          * Data Manipulation Logic
          */
+        Statement reservationsByConfirmationSelectAll = null;
 
-        // TODO: Construct SimpleStatement for retrieving the entire contents of the reservations_by_confirmation table
-        SimpleStatement reservationsByConfirmationSelectAll = new SimpleStatement(
-                "SELECT * FROM reservations_by_confirmation");
+        // TODO: use PreparedStatement to create a BoundStatement for retrieving all reservations
+        // from the reservations_by_confirmation table
+        // Hint: there are no parameters to pass to bind
+        reservationsByConfirmationSelectAll = reservationsByConfirmationSelectAllPrepared.bind();
 
         // TODO: Execute the statement to get a result set
         ResultSet resultSet = session.execute(reservationsByConfirmationSelectAll);
 
-        // TODO: Iterate over the rows in the result set, creating a reservation for each one
-        // Hint: find the logic you wrote for retrieveReservation() for processing a single row,
-        // and refactor that into a method you can reuse here
+        // Iterate over the rows in the result set, creating a reservation for each one
         for (Row row : resultSet) {
             reservations.add(extractReservationFromRow(row));
         }
@@ -199,13 +229,13 @@ public class ReservationService {
         /*
          * Data Manipulation Logic
          */
+        Statement reservationsByConfirmationDelete = null;
 
-        // TODO: Construct SimpleStatement for deleting the selected item from the reservations_by_confirmation table
-        SimpleStatement reservationsByConfirmationDelete = new SimpleStatement(
-                "DELETE * FROM reservations_by_confirmation WHERE confirmation_number=?",
-                confirmationNumber);
+        // TODO: use PreparedStatement to create a BoundStatement for deleting the reservation
+        // from the reservations_by_confirmation table
+        reservationsByConfirmationDelete = reservationsByConfirmationDeletePrepared.bind(confirmationNumber);
 
-        // TODO: Execute the statement
+        // Execute the statement
         session.execute(reservationsByConfirmationDelete);
     }
 
@@ -223,20 +253,31 @@ public class ReservationService {
         return confirmationNumber;
     }
 
-    // TODO: method to extract a Reservation from a row
+    // convenience method to be replaced in a later exercise by codecs
+    private com.datastax.driver.core.LocalDate convertJavaLocalDateToDataStax(java.time.LocalDate date)
+    {
+        if (date == null) return null;
+        int year=date.getYear();
+        int month = date.getMonthValue();
+        int day = date.getDayOfMonth();
+        return com.datastax.driver.core.LocalDate.fromYearMonthDay(year, month, day);
+    }
+
+    // convenience method to be replaced in a later exercise by codecs
+    private java.time.LocalDate convertDataStaxLocalDateToJava(com.datastax.driver.core.LocalDate date)
+    {
+        if (date == null) return null;
+        return java.time.LocalDate.parse(date.toString());
+    }
+
+    // method to extract a Reservation from a row
     private Reservation extractReservationFromRow(Row row) {
         Reservation reservation;
         reservation = new Reservation();
         reservation.setConfirmationNumber(row.getString("confirmation_number"));
         reservation.setHotelId(row.getString("hotel_id"));
-        com.datastax.driver.core.LocalDate startDate = row.getDate("start_date");
-        if (startDate != null ) {
-            reservation.setStartDate(java.time.LocalDate.parse(startDate.toString()));
-        }
-        com.datastax.driver.core.LocalDate endDate = row.getDate("end_date");
-        if (endDate != null ) {
-            reservation.setEndDate(java.time.LocalDate.parse(endDate.toString()));
-        }
+        reservation.setStartDate(convertDataStaxLocalDateToJava(row.getDate("start_date")));
+        reservation.setEndDate(convertDataStaxLocalDateToJava(row.getDate("end_date")));
         reservation.setGuestId(row.getUUID("guest_id"));
         reservation.setRoomNumber(row.getShort("room_number"));
         return reservation;
