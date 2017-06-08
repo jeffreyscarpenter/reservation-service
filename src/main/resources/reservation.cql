@@ -14,11 +14,13 @@
  * limitations under the License.
  */
  
-/* This file contains the "reservation" keyspace and table definitions for the example
- * defined in Chapter 5 of Cassandra: The Definitive Guide, 2nd Edition
+/* This file contains a slightly modified version of the "reservation" keyspace and table definitions
+ * for the example defined in Chapter 5 of Cassandra: The Definitive Guide, 2nd Edition.
+ * (See original at: https://github.com/jeffreyscarpenter/cassandra-guide/resources/reservation.cql)
+ * The changes are to facilitate development exercises.
  */
   
- CREATE KEYSPACE reservation
+CREATE KEYSPACE reservation
     WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 3};
 
 CREATE TYPE reservation.address (
@@ -34,16 +36,19 @@ CREATE TABLE reservation.reservations_by_hotel_date (
     start_date date,
     end_date date,
     room_number smallint,
-    confirm_number text,
+    confirmation_number text,
     guest_id uuid,
     PRIMARY KEY ((hotel_id, start_date), room_number)
 ) WITH comment = 'Q7. Find reservations by hotel and date';
 
-CREATE MATERIALIZED VIEW reservation.reservations_by_confirmation AS
-    SELECT * FROM reservation.reservations_by_hotel_date
-    WHERE confirm_number IS NOT NULL and hotel_id IS NOT NULL and
-        start_date IS NOT NULL and room_number IS NOT NULL
-    PRIMARY KEY (confirm_number, hotel_id, start_date, room_number);
+CREATE TABLE reservation.reservations_by_confirmation (
+    confirmation_number text PRIMARY KEY,
+    hotel_id text,
+    start_date date,
+    end_date date,
+    room_number smallint,
+    guest_id uuid
+);
 
 CREATE TABLE reservation.reservations_by_guest (
     guest_last_name text,
@@ -51,7 +56,7 @@ CREATE TABLE reservation.reservations_by_guest (
     start_date date,
     end_date date,
     room_number smallint,
-    confirm_number text,
+    confirmation_number text,
     guest_id uuid,
     PRIMARY KEY ((guest_last_name), hotel_id)
 ) WITH comment = 'Q8. Find reservations by guest name';
@@ -64,5 +69,6 @@ CREATE TABLE reservation.guests (
     emails set<text>,
     phone_numbers list<text>,
     addresses map<text, frozen<address>>,
-    confirm_number text
+    confirmation_number text
 ) WITH comment = 'Q9. Find guest by ID';
+
