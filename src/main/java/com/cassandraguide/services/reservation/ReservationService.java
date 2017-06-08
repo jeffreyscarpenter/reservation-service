@@ -32,8 +32,6 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 
 // TODO: add imports for PreparedStatement, BoundStatement
-import com.datastax.driver.core.PreparedStatement;
-import com.datastax.driver.core.BoundStatement;
 
 @Component
 public class ReservationService {
@@ -44,11 +42,6 @@ public class ReservationService {
     private Session session;
 
     // TODO: declare variables for prepared statements: insert, select, update, select all, delete
-    private PreparedStatement reservationsByConfirmationInsertPrepared;
-    private PreparedStatement reservationsByConfirmationSelectPrepared;
-    private PreparedStatement reservationsByConfirmationUpdatePrepared;
-    private PreparedStatement reservationsByConfirmationSelectAllPrepared;
-    private PreparedStatement reservationsByConfirmationDeletePrepared;
 
     public ReservationService() {
 
@@ -61,26 +54,15 @@ public class ReservationService {
         session = cluster.connect("reservation");
 
         // TODO: create prepared statement for inserting a new reservation
-        reservationsByConfirmationInsertPrepared = session.prepare(
-                "INSERT INTO reservations_by_confirmation (confirmation_number, hotel_id, start_date, " +
-                        "end_date, room_number, guest_id) VALUES (?, ?, ?, ?, ?, ?)");
 
         // TODO: create prepared statement for retrieving a reservation
-        reservationsByConfirmationSelectPrepared = session.prepare(
-                "SELECT * FROM reservations_by_confirmation where confirmation_number=?");
 
         // TODO: create prepared statement for retrieving all reservations
-        reservationsByConfirmationSelectAllPrepared = session.prepare(
-                "SELECT * FROM reservations_by_confirmation");
 
         // TODO: create prepared statement for updating a reservation
-        reservationsByConfirmationUpdatePrepared = session.prepare(
-                "UPDATE reservations_by_confirmation SET hotel_id=?, start_date=?, " +
-                        "end_date=?, room_number=?, guest_id=? WHERE confirmation_number=?");
 
         // TODO: create prepared statement for deleting a  reservation
-        reservationsByConfirmationDeletePrepared = session.prepare(
-                "DELETE FROM reservations_by_confirmation WHERE confirmation_number=?");
+
 
     }
 
@@ -112,13 +94,6 @@ public class ReservationService {
         // TODO: use PreparedStatement to create a BoundStatement for inserting the reservation
         // For this exercise we will insert only into the reservations_by_confirmation table
         // Hint: use provided convenience function convertJavaLocalDateToDataStax for start and end dates
-        reservationsByConfirmationInsert = reservationsByConfirmationInsertPrepared.bind(
-                reservation.getConfirmationNumber(),
-                reservation.getHotelId(),
-                convertJavaLocalDateToDataStax(reservation.getStartDate()),
-                convertJavaLocalDateToDataStax(reservation.getEndDate()),
-                reservation.getRoomNumber(),
-                reservation.getGuestId());
 
         // Execute the statement
         session.execute(reservationsByConfirmationInsert);
@@ -138,7 +113,6 @@ public class ReservationService {
 
         // TODO: use PreparedStatement to create a BoundStatement for retrieving the reservation
         // from the reservations_by_confirmation table
-        reservationsByConfirmationSelect = reservationsByConfirmationSelectPrepared.bind(confirmationNumber);
 
         // Execute the statement
         ResultSet resultSet = session.execute(reservationsByConfirmationSelect);
@@ -181,13 +155,6 @@ public class ReservationService {
         // TODO: use PreparedStatement to create a BoundStatement for updating the reservation
         // For this exercise we will insert only into the reservations_by_confirmation table
         // Hint: use provided convenience function convertJavaLocalDateToDataStax for start and end dates
-        reservationsByConfirmationUpdate = reservationsByConfirmationUpdatePrepared.bind(
-                reservation.getConfirmationNumber(),
-                reservation.getHotelId(),
-                convertJavaLocalDateToDataStax(reservation.getStartDate()),
-                convertJavaLocalDateToDataStax(reservation.getEndDate()),
-                reservation.getRoomNumber(),
-                reservation.getGuestId());
 
         // Execute the statement
         session.execute(reservationsByConfirmationUpdate);
@@ -206,9 +173,8 @@ public class ReservationService {
         // TODO: use PreparedStatement to create a BoundStatement for retrieving all reservations
         // from the reservations_by_confirmation table
         // Hint: there are no parameters to pass to bind
-        reservationsByConfirmationSelectAll = reservationsByConfirmationSelectAllPrepared.bind();
 
-        // TODO: Execute the statement to get a result set
+        // Execute the statement to get a result set
         ResultSet resultSet = session.execute(reservationsByConfirmationSelectAll);
 
         // Iterate over the rows in the result set, creating a reservation for each one
@@ -233,7 +199,6 @@ public class ReservationService {
 
         // TODO: use PreparedStatement to create a BoundStatement for deleting the reservation
         // from the reservations_by_confirmation table
-        reservationsByConfirmationDelete = reservationsByConfirmationDeletePrepared.bind(confirmationNumber);
 
         // Execute the statement
         session.execute(reservationsByConfirmationDelete);
