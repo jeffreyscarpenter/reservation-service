@@ -50,11 +50,6 @@
         </dependency>
 
 		<!-- TODO: DataStax Java Driver -->
-        <dependency>
-            <groupId>com.datastax.cassandra</groupId>
-            <artifactId>cassandra-driver-core</artifactId>
-            <version>3.2.0</version>
-        </dependency>
 
     </dependencies>
 
