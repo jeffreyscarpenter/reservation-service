@@ -229,9 +229,6 @@ public class ReservationService {
         reservation = new Reservation();
         reservation.setConfirmationNumber(row.getString("confirmation_number"));
         reservation.setHotelId(row.getString("hotel_id"));
-        reservation.setStartDate(row.get("start_date", LocalDate.class));
-        reservation.setEndDate(row.get("end_date", LocalDate.class));
-        /*
         com.datastax.driver.core.LocalDate startDate = row.getDate("start_date");
         if (startDate != null ) {
             reservation.setStartDate(java.time.LocalDate.parse(startDate.toString()));
@@ -240,7 +237,6 @@ public class ReservationService {
         if (endDate != null ) {
             reservation.setEndDate(java.time.LocalDate.parse(endDate.toString()));
         }
-        */
         reservation.setGuestId(row.getUUID("guest_id"));
         reservation.setRoomNumber(row.getShort("room_number"));
         return reservation;
