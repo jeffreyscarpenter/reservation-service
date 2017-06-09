@@ -106,7 +106,7 @@ public class ReservationServiceRestController {
         logger.debug("Request to update reservation " + confirmationNumber);
 
         // Validate reservation matches provided confirmation number
-        if (confirmationNumber != reservationToUpdate.getConfirmationNumber())
+        if (!confirmationNumber.equals(reservationToUpdate.getConfirmationNumber()))
         {
             logger.error("Request to update reservation - confirmation number doesn't match: " +
                     "request param: " + confirmationNumber +
