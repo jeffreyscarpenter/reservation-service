@@ -26,11 +26,7 @@ import java.time.LocalDate;
 // DataStax Java Driver imports
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
-
-import com.datastax.driver.mapping.Result;
 
 // TODO: add imports for MappingManager, Mapper, Result
 
@@ -156,19 +152,14 @@ public class ReservationService {
         /*
          * Data Manipulation Logic
          */
-        Result<ReservationByConfirmation> reservationsByConfirmation = null;
 
         // TODO: use the session to retrieve all reservations
         // Hint: you can do this just by providing a string
 
         // TODO: use the mapper to convert the ResultSet to ReservationByConfirmation objects
 
-        // Iterate over the results
-        for (ReservationByConfirmation reservationByConfirmation : reservationsByConfirmation) {
-            // TODO: create a Reservation for each ReservationByConfirmation
-            // Hint: use convenience function provided below
-            reservations.add(convertFromMappingClass(reservationByConfirmation));
-        }
+        // TODO Iterate over the Result<T> of ReservationByConfirmation
+        // Hint: use convenience function provided below to convert each item in the result to a Reservation
 
         return reservations;
     }
