@@ -28,12 +28,11 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 
-import com.datastax.driver.mapping.Result;
-
-// TODO: add imports for MappingManager, Mapper
+// TODO: add imports for MappingManager, Mapper, Result
+// Hint: http://docs.datastax.com/en/drivers/java/3.2/com/datastax/driver/mapping/package-summary.html
 import com.datastax.driver.mapping.MappingManager;
 import com.datastax.driver.mapping.Mapper;
-
+import com.datastax.driver.mapping.Result;
 
 @Component
 public class ReservationService {
@@ -44,7 +43,7 @@ public class ReservationService {
     private Session session;
 
     // TODO: private variable to hold mapper
-    Mapper<ReservationByConfirmation> reservationMapper;
+    private Mapper<ReservationByConfirmation> reservationMapper;
 
     public ReservationService() {
 
@@ -166,19 +165,17 @@ public class ReservationService {
         /*
          * Data Manipulation Logic
          */
-        Result<ReservationByConfirmation> reservationsByConfirmation = null;
 
         // TODO: use the session to retrieve all reservations
         // Hint: you can do this just by providing a string
         ResultSet resultSet = session.execute("SELECT * FROM reservations_by_confirmation");
 
-        // TODO: use the mapper to convert the ResultSet to ReservationByConfirmation objects
-        reservationsByConfirmation = reservationMapper.map(resultSet);
+        // TODO: use the mapper to convert the ResultSet to a Result<T> of ReservationByConfirmation
+        Result<ReservationByConfirmation> reservationsByConfirmation = reservationMapper.map(resultSet);
 
-        // Iterate over the results
+        // TODO Iterate over the Result<T> of ReservationByConfirmation
+        // Hint: use convenience function provided below to convert each item in the result to a Reservation
         for (ReservationByConfirmation reservationByConfirmation : reservationsByConfirmation) {
-            // TODO: create a Reservation for each ReservationByConfirmation
-            // Hint: use convenience function provided below
             reservations.add(convertFromMappingClass(reservationByConfirmation));
         }
 
