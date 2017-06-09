@@ -23,7 +23,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalDate;
 
-// TODO: DataStax Java Driver imports
+// DataStax Java Driver imports
+import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
+import com.datastax.driver.core.Statement;
+
+// TODO: add imports for MappingManager, Mapper, Result
+import com.datastax.driver.mapping.MappingManager;
+import com.datastax.driver.mapping.Mapper;
+import com.datastax.driver.mapping.Result;
 
 
 @Component
@@ -31,14 +41,27 @@ public class ReservationService {
 
     private static final Logger logger = LoggerFactory.getLogger(ReservationService.class);
 
-    // TODO: private variable to hold DataStax Java Driver Session - used for executing queries
+    // private variable to hold DataStax Java Driver Session - used for executing queries
+    private Session session;
+
+    // TODO: private variable to hold mapper
+    Mapper<ReservationByConfirmation> reservationMapper;
 
     public ReservationService() {
 
-        // TODO: Create cluster with connection to localhost
+        // Create cluster with connection to localhost
+        Cluster cluster = Cluster.builder()
+                .addContactPoint("127.0.0.1")
+                .build();
 
-        // TODO: Create session for reservation keyspace
+        // Create session for reservation keyspace
+        session = cluster.connect("reservation");
 
+        // TODO: Create Mapping Manager
+        MappingManager mappingManager = new MappingManager(session);
+
+        // TODO: Create reservation mapper for the mapping class
+        reservationMapper = mappingManager.mapper(ReservationByConfirmation.class);
     }
 
     public String createReservation(Reservation reservation) {
@@ -53,7 +76,7 @@ public class ReservationService {
         if (reservation.getConfirmationNumber() != null)
         {
             logger.error("Received new reservation containing confirmation number: " +
-                reservation.getConfirmationNumber());
+                    reservation.getConfirmationNumber());
             throw new IllegalArgumentException("New reservation cannot contain confirmation number");
         }
 
@@ -64,9 +87,14 @@ public class ReservationService {
          * Data Manipulation Logic
          */
 
-        // TODO: Construct SimpleStatement for inserting the reservation
+        ReservationByConfirmation reservationByConfirmation = null;
 
-        // TODO: Execute the statement
+        // TODO: convert the provided Reservation to the mapping class
+        // Hint: use convenience function provided below
+        reservationByConfirmation = convertToMappingClass(reservation);
+
+        // TODO: use mapper to insert the reservation
+        reservationMapper.save(reservationByConfirmation);
 
         // Return the confirmation number that was created
         return reservation.getConfirmationNumber();
@@ -79,14 +107,24 @@ public class ReservationService {
         /*
          * Data Manipulation Logic
          */
+        ReservationByConfirmation reservationByConfirmation = null;
 
-        // TODO: Construct SimpleStatement for retrieving the reservation from the reservations_by_confirmation table
+        // TODO: use mapper to retrieve the reservation
+        reservationByConfirmation = reservationMapper.get(confirmationNumber);
 
-        // TODO: Execute the statement
+        // TODO: convert the mapping to a Reservation
 
-        // TODO: Process the results (ResultSet)
-        // Hint: an empty result might not be an error as this method is sometimes used to check whether a
+        // Process the result
+        // an empty result might not be an error as this method is sometimes used to check whether a
         // reservation with this confirmation number exists
+        if (reservationByConfirmation == null) {
+            logger.debug("Unable to load reservation with confirmation number: " + confirmationNumber);
+        }
+        else {
+            // TODO: convert result from mapping class to Reservation
+            // Hint: use convenience function provided below
+            reservation = convertFromMappingClass(reservationByConfirmation);
+        }
 
         return reservation;
     }
@@ -110,11 +148,15 @@ public class ReservationService {
         /*
          * Data Manipulation Logic
          */
+        ReservationByConfirmation reservationByConfirmation = null;
 
-        // TODO: Construct SimpleStatement for updating the reservation
+        // TODO: convert the provided Reservation to the mapping class
+        // Hint: use convenience function provided below
+        reservationByConfirmation = convertToMappingClass(reservation);
 
-        // TODO: Execute the statement
-
+        // TODO: use mapper to update the reservation
+        // Hint: this should look the same as the logic in createReservation()
+        reservationMapper.save(reservationByConfirmation);
     }
 
     public List<Reservation> getAllReservations() {
@@ -125,12 +167,21 @@ public class ReservationService {
         /*
          * Data Manipulation Logic
          */
+        Result<ReservationByConfirmation> reservationsByConfirmation = null;
 
-        // TODO: Construct SimpleStatement for retrieving the entire contents of the reservations_by_confirmation table
+        // TODO: use the session to retrieve all reservations
+        // Hint: you can do this just by providing a string
+        ResultSet resultSet = session.execute("SELECT * FROM reservations_by_confirmation");
 
-        // TODO: Execute the statement to get a result set
+        // TODO: use the mapper to convert the ResultSet to ReservationByConfirmation objects
+        reservationsByConfirmation = reservationMapper.map(resultSet);
 
-        // TODO: Iterate over the rows in the result set, creating a reservation for each one
+        // Iterate over the results
+        for (ReservationByConfirmation reservationByConfirmation : reservationsByConfirmation) {
+            // TODO: create a Reservation for each ReservationByConfirmation
+            // Hint: use convenience function provided below
+            reservations.add(convertFromMappingClass(reservationByConfirmation));
+        }
 
         return reservations;
     }
@@ -146,10 +197,8 @@ public class ReservationService {
          * Data Manipulation Logic
          */
 
-        // TODO: Construct SimpleStatement for deleting the selected item from the reservations_by_confirmation table
-
-        // TODO: Execute the statement
-
+        // TODO: use mapper to delete the reservation
+        reservationMapper.delete(confirmationNumber);
     }
 
     // convenience method, you should not need to modify
@@ -166,4 +215,46 @@ public class ReservationService {
         return confirmationNumber;
     }
 
+    // convenience method to be replaced in a later exercise by codecs
+    private static com.datastax.driver.core.LocalDate convertJavaLocalDateToDataStax(java.time.LocalDate date)
+    {
+        if (date == null) return null;
+        int year=date.getYear();
+        int month = date.getMonthValue();
+        int day = date.getDayOfMonth();
+        return com.datastax.driver.core.LocalDate.fromYearMonthDay(year, month, day);
+    }
+
+    // convenience method to be replaced in a later exercise by codecs
+    private static java.time.LocalDate convertDataStaxLocalDateToJava(com.datastax.driver.core.LocalDate date)
+    {
+        if (date == null) return null;
+        return java.time.LocalDate.parse(date.toString());
+    }
+
+    //
+
+    // convenience method to convert a ReservationByConfirmation to a Reservation
+    private static Reservation convertFromMappingClass(ReservationByConfirmation reservationByConfirmation) {
+        Reservation reservation = new Reservation();
+        reservation.setConfirmationNumber(reservationByConfirmation.getConfirmationNumber());
+        reservation.setHotelId(reservationByConfirmation.getHotelId());
+        reservation.setStartDate(convertDataStaxLocalDateToJava(reservationByConfirmation.getStartDate()));
+        reservation.setEndDate(convertDataStaxLocalDateToJava(reservationByConfirmation.getEndDate()));
+        reservation.setGuestId(reservationByConfirmation.getGuestId());
+        reservation.setRoomNumber(reservationByConfirmation.getRoomNumber());
+        return reservation;
+    }
+
+    // convenience method to convert a Reservation to a ReservationByConfirmation
+    private static ReservationByConfirmation convertToMappingClass(Reservation reservation) {
+        ReservationByConfirmation reservationByConfirmation = new ReservationByConfirmation();
+        reservationByConfirmation.setConfirmationNumber(reservation.getConfirmationNumber());
+        reservationByConfirmation.setHotelId(reservation.getHotelId());
+        reservationByConfirmation.setStartDate(convertJavaLocalDateToDataStax(reservation.getStartDate()));
+        reservationByConfirmation.setEndDate(convertJavaLocalDateToDataStax(reservation.getEndDate()));
+        reservationByConfirmation.setGuestId(reservation.getGuestId());
+        reservationByConfirmation.setRoomNumber(reservation.getRoomNumber());
+        return reservationByConfirmation;
+    }
 }
