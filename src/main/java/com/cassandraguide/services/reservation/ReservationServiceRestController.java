@@ -19,16 +19,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 public class ReservationServiceRestController {
@@ -47,9 +44,9 @@ public class ReservationServiceRestController {
         Reservation reservation = reservationService.retrieveReservation(confirmationNumber);
         if (reservation == null) {
             logger.error("Reservation with confirmation number " + confirmationNumber + " not found");
-            return new ResponseEntity<Reservation>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.notFound().build();
         }
-        return new ResponseEntity<Reservation>(reservation, HttpStatus.OK);
+        return ResponseEntity.ok(reservation);
     }
 
     // get all reservations
@@ -60,9 +57,9 @@ public class ReservationServiceRestController {
         List<Reservation> reservations = reservationService.getAllReservations();
         if(reservations.isEmpty()){
             logger.debug("No reservations found");
-            return new ResponseEntity<List<Reservation>>(HttpStatus.NO_CONTENT);
+            return ResponseEntity.noContent().build();
         }
-        return new ResponseEntity<List<Reservation>>(reservations, HttpStatus.OK);
+        return ResponseEntity.ok(reservations);
     }
 
     // search operation
@@ -76,9 +73,9 @@ public class ReservationServiceRestController {
         List<Reservation> reservations = reservationService.searchReservationsByHotelDate(hotelId, date);
         if(reservations.isEmpty()){
             logger.debug("No reservations found");
-            return new ResponseEntity<List<Reservation>>(HttpStatus.NO_CONTENT);
+            return ResponseEntity.noContent().build();
         }
-        return new ResponseEntity<List<Reservation>>(reservations, HttpStatus.OK);
+        return ResponseEntity.ok(reservations);
     }
 
     @PostMapping("/reservations/")
@@ -106,13 +103,19 @@ public class ReservationServiceRestController {
         logger.debug("Request to update reservation " + confirmationNumber);
 
         // Validate reservation matches provided confirmation number
-        if (confirmationNumber != reservationToUpdate.getConfirmationNumber())
+        if (!confirmationNumber.equals(reservationToUpdate.getConfirmationNumber()))
         {
             logger.error("Request to update reservation - confirmation number doesn't match: " +
                     "request param: " + confirmationNumber +
                     ", request body: " + reservationToUpdate.getConfirmationNumber());
             return ResponseEntity.badRequest().build();
         }
+        if (reservationService.retrieveReservation(confirmationNumber) == null) {
+            logger.error("Unable to update. Reservation with confirmation number " +
+                    confirmationNumber + " not found");
+            return ResponseEntity.notFound().build();
+        }
+
         reservationService.updateReservation(reservationToUpdate);
 
         return ResponseEntity.noContent().build();
@@ -122,17 +125,18 @@ public class ReservationServiceRestController {
     public ResponseEntity<Void> deleteReservation(
             @PathVariable String confirmationNumber ) {
 
-        System.out.println("Fetching & Deleting reservation with confirmation number " + confirmationNumber);
+        logger.debug("Fetching & Deleting reservation with confirmation number " + confirmationNumber);
 
         Reservation reservation = reservationService.retrieveReservation(confirmationNumber);
         if (reservation == null) {
-            System.out.println("Unable to delete. Reservation with confirmation number " +
+            logger.error("Unable to delete. Reservation with confirmation number " +
                     confirmationNumber + " not found");
-            return new ResponseEntity<Void>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.notFound().build();
         }
 
         reservationService.deleteReservation(confirmationNumber);
-        return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
+
+        return ResponseEntity.noContent().build();
     }
 
 }
