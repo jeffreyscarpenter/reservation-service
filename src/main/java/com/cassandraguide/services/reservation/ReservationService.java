@@ -31,9 +31,7 @@ import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 
 // TODO: add imports for QueryBuilder
-import com.datastax.driver.core.querybuilder.QueryBuilder;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
+
 
 @Component
 public class ReservationService {
@@ -83,13 +81,6 @@ public class ReservationService {
         // TODO: use QueryBuilder to create a BuiltStatement for inserting the reservation
         // For this exercise we will insert only into the reservations_by_confirmation table
         // Hint: use provided convenience function convertJavaLocalDateToDataStax for start and end dates
-        reservationsByConfirmationInsert = QueryBuilder.insertInto("reservations_by_confirmation")
-                .value("confirmation_number", reservation.getConfirmationNumber())
-                .value("hotel_id", reservation.getHotelId())
-                .value("start_date", convertJavaLocalDateToDataStax(reservation.getStartDate()))
-                .value("end_date", convertJavaLocalDateToDataStax(reservation.getEndDate()))
-                .value("room_number", reservation.getRoomNumber())
-                .value("guest_id", reservation.getGuestId());
 
         // Execute the statement
         session.execute(reservationsByConfirmationInsert);
@@ -109,8 +100,6 @@ public class ReservationService {
 
         // TODO: use QueryBuilder to create a BuiltStatement for retrieving the reservation
         // from the reservations_by_confirmation table
-        reservationsByConfirmationSelect = QueryBuilder.select().from("reservations_by_confirmation")
-            .where(eq("confirmation_number", confirmationNumber));
 
         // Execute the statement
         ResultSet resultSet = session.execute(reservationsByConfirmationSelect);
@@ -153,13 +142,6 @@ public class ReservationService {
         // TODO: use QueryBuilder to create a BuiltStatement for updating the reservation
         // For this exercise we will insert only into the reservations_by_confirmation table
         // Hint: use provided convenience function convertJavaLocalDateToDataStax for start and end dates
-        reservationsByConfirmationUpdate  = QueryBuilder.update("reservations_by_confirmation")
-                .with(set("hotel_id", reservation.getHotelId()))
-                .and(set("start_date", convertJavaLocalDateToDataStax(reservation.getStartDate())))
-                .and(set("end_date", convertJavaLocalDateToDataStax(reservation.getEndDate())))
-                .and(set("room_number", reservation.getRoomNumber()))
-                .and(set("guest_id", reservation.getGuestId()))
-                .where(eq("confirmation_number", reservation.getConfirmationNumber()));
 
         // Execute the statement
         session.execute(reservationsByConfirmationUpdate);
@@ -178,7 +160,6 @@ public class ReservationService {
         // TODO: use QueryBuilder to create a BuiltStatement for retrieving all reservations
         // from the reservations_by_confirmation table
         // Hint: there are no parameters to pass to bind
-        reservationsByConfirmationSelectAll = QueryBuilder.select().from("reservations_by_confirmation");
 
         // Execute the statement to get a result set
         ResultSet resultSet = session.execute(reservationsByConfirmationSelectAll);
@@ -205,8 +186,6 @@ public class ReservationService {
 
         // TODO: use QueryBuilder to create a BuiltStatement for deleting the reservation
         // from the reservations_by_confirmation table
-        reservationsByConfirmationDelete = QueryBuilder.delete().from("reservations_by_confirmation")
-                .where(eq("confirmation_number", confirmationNumber));
 
         // Execute the statement
         session.execute(reservationsByConfirmationDelete);
