@@ -20,35 +20,26 @@ import java.util.UUID;
 import com.datastax.driver.core.LocalDate;
 
 // TODO: Add imports for DataStax Mapper
-import com.datastax.driver.mapping.annotations.Column;
-import com.datastax.driver.mapping.annotations.PartitionKey;
-import com.datastax.driver.mapping.annotations.Table;
+
 
 // Class used to map a reservation to the reservations_by_confirmation table.
 // TODO: Add Table annotation
-@Table(keyspace = "reservation", name = "reservations_by_confirmation")
 public class ReservationByConfirmation {
 
 
     // TODO: Add PartitionKey and Column annotation
-    @PartitionKey
-    @Column(name = "confirmation_number")
+
     private String confirmationNumber;
 
     // TODO: Add Column annotations
-    @Column(name = "hotel_id")
     private String hotelId;
 
-    @Column (name = "start_date")
     private LocalDate startDate;
 
-    @Column (name = "end_date")
     private LocalDate endDate;
 
-    @Column (name = "room_number")
     private short roomNumber;
 
-    @Column (name = "guest_id")
     private UUID guestId;
 
     public String getHotelId() {

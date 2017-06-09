@@ -57,11 +57,6 @@
         </dependency>
 
         <!-- TODO: DataStax Java Driver - Mapper -->
-        <dependency>
-            <groupId>com.datastax.cassandra</groupId>
-            <artifactId>cassandra-driver-mapping</artifactId>
-            <version>3.2.0</version>
-        </dependency>
 
     </dependencies>
 

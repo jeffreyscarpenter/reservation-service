@@ -30,11 +30,9 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.Statement;
 
-// TODO: add imports for MappingManager, Mapper, Result
-import com.datastax.driver.mapping.MappingManager;
-import com.datastax.driver.mapping.Mapper;
 import com.datastax.driver.mapping.Result;
 
+// TODO: add imports for MappingManager, Mapper, Result
 
 @Component
 public class ReservationService {
@@ -45,7 +43,6 @@ public class ReservationService {
     private Session session;
 
     // TODO: private variable to hold mapper
-    Mapper<ReservationByConfirmation> reservationMapper;
 
     public ReservationService() {
 
@@ -58,10 +55,8 @@ public class ReservationService {
         session = cluster.connect("reservation");
 
         // TODO: Create Mapping Manager
-        MappingManager mappingManager = new MappingManager(session);
 
         // TODO: Create reservation mapper for the mapping class
-        reservationMapper = mappingManager.mapper(ReservationByConfirmation.class);
     }
 
     public String createReservation(Reservation reservation) {
@@ -91,10 +86,8 @@ public class ReservationService {
 
         // TODO: convert the provided Reservation to the mapping class
         // Hint: use convenience function provided below
-        reservationByConfirmation = convertToMappingClass(reservation);
 
         // TODO: use mapper to insert the reservation
-        reservationMapper.save(reservationByConfirmation);
 
         // Return the confirmation number that was created
         return reservation.getConfirmationNumber();
@@ -110,7 +103,6 @@ public class ReservationService {
         ReservationByConfirmation reservationByConfirmation = null;
 
         // TODO: use mapper to retrieve the reservation
-        reservationByConfirmation = reservationMapper.get(confirmationNumber);
 
         // TODO: convert the mapping to a Reservation
 
@@ -123,7 +115,6 @@ public class ReservationService {
         else {
             // TODO: convert result from mapping class to Reservation
             // Hint: use convenience function provided below
-            reservation = convertFromMappingClass(reservationByConfirmation);
         }
 
         return reservation;
@@ -152,11 +143,9 @@ public class ReservationService {
 
         // TODO: convert the provided Reservation to the mapping class
         // Hint: use convenience function provided below
-        reservationByConfirmation = convertToMappingClass(reservation);
 
         // TODO: use mapper to update the reservation
         // Hint: this should look the same as the logic in createReservation()
-        reservationMapper.save(reservationByConfirmation);
     }
 
     public List<Reservation> getAllReservations() {
@@ -171,10 +160,8 @@ public class ReservationService {
 
         // TODO: use the session to retrieve all reservations
         // Hint: you can do this just by providing a string
-        ResultSet resultSet = session.execute("SELECT * FROM reservations_by_confirmation");
 
         // TODO: use the mapper to convert the ResultSet to ReservationByConfirmation objects
-        reservationsByConfirmation = reservationMapper.map(resultSet);
 
         // Iterate over the results
         for (ReservationByConfirmation reservationByConfirmation : reservationsByConfirmation) {
@@ -198,7 +185,6 @@ public class ReservationService {
          */
 
         // TODO: use mapper to delete the reservation
-        reservationMapper.delete(confirmationNumber);
     }
 
     // convenience method, you should not need to modify
