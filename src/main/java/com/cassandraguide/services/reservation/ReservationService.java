@@ -65,8 +65,6 @@ public class ReservationService {
          */
 
         // TODO: Construct SimpleStatement for inserting the reservation
-        // For this exercise we will insert only into the reservations_by_confirmation table
-        // Hint: convert the start date and end dates to Strings
 
         // TODO: Execute the statement
 
@@ -83,19 +81,12 @@ public class ReservationService {
          */
 
         // TODO: Construct SimpleStatement for retrieving the reservation from the reservations_by_confirmation table
-        // Hint: Remember to use parameterization
-
 
         // TODO: Execute the statement
-
 
         // TODO: Process the results (ResultSet)
         // Hint: an empty result might not be an error as this method is sometimes used to check whether a
         // reservation with this confirmation number exists
-
-        // Hint: If there is a result, create a new reservation object and set the values
-        // Bonus: factor the logic to extract a reservation from a row into a separate method
-        // (you will reuse it again later in getAllReservations())
 
         return reservation;
     }
@@ -121,7 +112,6 @@ public class ReservationService {
          */
 
         // TODO: Construct SimpleStatement for updating the reservation
-        // For this exercise we will insert only into the reservations_by_confirmation table
 
         // TODO: Execute the statement
 
@@ -141,8 +131,6 @@ public class ReservationService {
         // TODO: Execute the statement to get a result set
 
         // TODO: Iterate over the rows in the result set, creating a reservation for each one
-        // Hint: find the logic you wrote for retrieveReservation() for processing a single row,
-        // and refactor that into a method you can reuse here
 
         return reservations;
     }
