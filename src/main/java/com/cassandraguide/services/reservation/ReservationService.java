@@ -26,14 +26,13 @@ import java.time.LocalDate;
 // DataStax Java Driver imports
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
 
-// TODO: add imports for MappingManager, Mapper, Result
+import com.datastax.driver.mapping.Result;
+
+// TODO: add imports for MappingManager, Mapper
 import com.datastax.driver.mapping.MappingManager;
 import com.datastax.driver.mapping.Mapper;
-import com.datastax.driver.mapping.Result;
 
 
 @Component
