@@ -17,9 +17,7 @@ package com.cassandraguide.services.reservation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-//import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -40,13 +38,7 @@ import javax.annotation.PostConstruct;
 @Component
 public class ReservationService {
 
-    // TODO: No action required, just note declaration of environment
-    //@Value(value = "${com.cassandraguide.services.reservation.CASSANDRA_NODES}")
-    //public String cassandraNodes;
-
-    //@Autowired
-    //private Environment env;
-
+    // TODO: No action required, just note usage of configuration class
     @Autowired
     CassandraConfiguration cassandraConfiguration;
 
@@ -64,12 +56,13 @@ public class ReservationService {
 
     public ReservationService() {}
 
+    // TODO: No action required, but note moving of logic to post-constructor init() method
     @PostConstruct
     public void init() {
 
         // TODO: Update to load multiple contact points from the CASSANDRA_NODES environment variable
         Cluster cluster = Cluster.builder()
-                .addContactPoints(cassandraConfiguration.getCassandraNodes())
+                .addContactPoint("127.0.0.1")
                 .build();
 
         // Create session for reservation keyspace

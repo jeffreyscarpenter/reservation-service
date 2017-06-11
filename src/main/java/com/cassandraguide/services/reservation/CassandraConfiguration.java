@@ -23,6 +23,7 @@ public class CassandraConfiguration {
 
     // TODO: No action required, just note declaration of environment
 
+    // Property supports comma-separated list of IP addresses
     @Value("#{'${com.cassandraguide.services.reservation.CASSANDRA_NODES}'.split(',')}")
     private String[] cassandraNodes;
 
