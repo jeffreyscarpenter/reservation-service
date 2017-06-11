@@ -56,14 +56,10 @@ public class ReservationService {
         // TODO: create QueryOptions to contain our desired default consistency level
         // Hint: use the ConsistencyLevel.valueOf() method to convert String from configuration class
         // to ConsistencyLevel
-        QueryOptions queryOptions = new QueryOptions();
-        queryOptions.setConsistencyLevel(ConsistencyLevel.valueOf(
-                cassandraConfiguration.getDefaultConsistencyLevel()));
 
         // TODO: Update to set the desired QueryOptions
         Cluster cluster = Cluster.builder()
                 .addContactPoints(cassandraConfiguration.getCassandraNodes())
-                .withQueryOptions(queryOptions)
                 .build();
 
         // Create session for reservation keyspace
@@ -213,8 +209,7 @@ public class ReservationService {
         reservationsByConfirmationSelectAll = reservationsByConfirmationSelectAllPrepared.bind();
 
         // TODO: Override the default consistency level to use consistency level "ONE" for this query
-        reservationsByConfirmationSelectAll.setConsistencyLevel(ConsistencyLevel.ONE);
-        
+
         // Execute the statement to get a result set
         ResultSet resultSet = session.execute(reservationsByConfirmationSelectAll);
 
