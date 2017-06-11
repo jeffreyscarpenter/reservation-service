@@ -62,7 +62,7 @@ public class ReservationService {
 
         // TODO: Update to load multiple contact points from the CASSANDRA_NODES environment variable
         Cluster cluster = Cluster.builder()
-                .addContactPoint("127.0.0.1")
+                .addContactPoints(cassandraConfiguration.getCassandraNodes())
                 .build();
 
         // Create session for reservation keyspace
