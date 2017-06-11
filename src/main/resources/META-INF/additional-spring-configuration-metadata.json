@@ -1,0 +1,8 @@
+{
+  "properties": [
+    {
+      "name": "com.cassandraguide.services.reservation.CASSANDRA_NODES",
+      "type": "java.lang.String",
+      "description": "Description for com.cassandraguide.services.reservation.CASSANDRA_NODES."
+  }
+] }
