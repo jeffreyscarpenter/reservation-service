@@ -15,6 +15,7 @@
  */
 package com.cassandraguide.services.reservation;
 
+import com.datastax.driver.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,13 +26,6 @@ import java.util.List;
 import java.time.LocalDate;
 
 // DataStax Java Driver imports
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.Statement;
-
-import com.datastax.driver.core.PreparedStatement;
 
 import javax.annotation.PostConstruct;
 
@@ -56,13 +50,20 @@ public class ReservationService {
 
     public ReservationService() {}
 
-    // TODO: No action required, but note moving of logic to post-constructor init() method
     @PostConstruct
     public void init() {
 
-        // TODO: Update to load multiple contact points from the CASSANDRA_NODES environment variable
+        // TODO: create QueryOptions to contain our desired default consistency level
+        // Hint: use the ConsistencyLevel.valueOf() method to convert String from configuration class
+        // to ConsistencyLevel
+        QueryOptions queryOptions = new QueryOptions();
+        queryOptions.setConsistencyLevel(ConsistencyLevel.valueOf(
+                cassandraConfiguration.getDefaultConsistencyLevel()));
+
+        // TODO: Update to set the desired QueryOptions
         Cluster cluster = Cluster.builder()
                 .addContactPoints(cassandraConfiguration.getCassandraNodes())
+                .withQueryOptions(queryOptions)
                 .build();
 
         // Create session for reservation keyspace
@@ -211,6 +212,9 @@ public class ReservationService {
         // Hint: there are no parameters to pass to bind
         reservationsByConfirmationSelectAll = reservationsByConfirmationSelectAllPrepared.bind();
 
+        // TODO: Override the default consistency level to use consistency level "ONE" for this query
+        reservationsByConfirmationSelectAll.setConsistencyLevel(ConsistencyLevel.ONE);
+        
         // Execute the statement to get a result set
         ResultSet resultSet = session.execute(reservationsByConfirmationSelectAll);
 

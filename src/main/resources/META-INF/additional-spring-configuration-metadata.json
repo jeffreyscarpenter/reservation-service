@@ -3,6 +3,12 @@
     {
       "name": "com.cassandraguide.services.reservation.CASSANDRA_NODES",
       "type": "java.lang.String",
-      "description": "Description for com.cassandraguide.services.reservation.CASSANDRA_NODES."
-  }
+      "description": "Comma-separated list of IP addreses of Cassandra nodes"
+  },
+    {
+      "name": "com.cassandraguide.services.reservation.DEFAULT_CONSISTENCY_LEVEL",
+      "type": "java.lang.String",
+      "description": "Default consistency level to use on Cassandra queries (ONE, TWO, THREE, QUORUM, ALL, etc."
+    }
+
 ] }

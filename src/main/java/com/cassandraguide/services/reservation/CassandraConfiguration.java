@@ -21,13 +21,19 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CassandraConfiguration {
 
-    // TODO: No action required, just note declaration of environment
-
     // Property supports comma-separated list of IP addresses
     @Value("#{'${com.cassandraguide.services.reservation.CASSANDRA_NODES}'.split(',')}")
     private String[] cassandraNodes;
 
+    // TODO: No action required, just note declaration of new property
+    @Value("${com.cassandraguide.services.reservation.DEFAULT_CONSISTENCY_LEVEL}")
+    private String defaultConsistencyLevel;
+
     public String[] getCassandraNodes() {
         return cassandraNodes;
+    }
+
+    public String getDefaultConsistencyLevel() {
+        return defaultConsistencyLevel;
     }
 }
