@@ -131,7 +131,6 @@ public class ReservationService {
 
         // TODO: create BoundStatement using PreparedStatement for insert into reservations_by_hotel_date table
 
-
         BatchStatement reservationBatchInsert = null;
 
         // TODO: create BatchStatement containing our two insert statements
@@ -264,8 +263,7 @@ public class ReservationService {
         Statement reservationsByConfirmationDelete = reservationsByConfirmationDeletePrepared.bind(confirmationNumber);
 
         // TODO: create BoundStatement using PreparedStatement for delete from reservations_by_hotel_date table
-
-
+        
         BatchStatement reservationBatchDelete = null;
 
         // TODO: create BatchStatement containing our two delete statements
