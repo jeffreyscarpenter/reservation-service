@@ -145,7 +145,7 @@ public class ReservationService {
                 reservation.getRoomNumber(),
                 reservation.getGuestId());
 
-        BatchStatement reservationBatchInsert;
+        BatchStatement reservationBatchInsert = null;
 
         // TODO: create BatchStatement containing our two insert statements
         reservationBatchInsert = new BatchStatement();
@@ -223,7 +223,7 @@ public class ReservationService {
                 reservation.getRoomNumber(),
                 reservation.getGuestId());
 
-        BatchStatement reservationBatchUpdate;
+        BatchStatement reservationBatchUpdate = null;
 
         // TODO: create BatchStatement containing our two insert statements
         reservationBatchUpdate = new BatchStatement();
@@ -289,7 +289,7 @@ public class ReservationService {
                 convertJavaLocalDateToDataStax(reservation.getStartDate()),
                 reservation.getRoomNumber());
 
-        BatchStatement reservationBatchDelete;
+        BatchStatement reservationBatchDelete = null;
 
         // TODO: create BatchStatement containing our two delete statements
         reservationBatchDelete = new BatchStatement();
