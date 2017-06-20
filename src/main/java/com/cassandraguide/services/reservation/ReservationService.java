@@ -46,9 +46,6 @@ public class ReservationService {
     private PreparedStatement reservationsByConfirmationUpdatePrepared;
     private PreparedStatement reservationsByConfirmationSelectAllPrepared;
     private PreparedStatement reservationsByConfirmationDeletePrepared;
-
-    // TODO: declare variables for prepared statements for new table
-    // Hint: For this exercise we will only be looking at insert/update/delete
     private PreparedStatement reservationsByHotelDateInsertPrepared;
     private PreparedStatement reservationsByHotelDateUpdatePrepared;
     private PreparedStatement reservationsByHotelDateDeletePrepared;
@@ -72,9 +69,11 @@ public class ReservationService {
         session = cluster.connect("reservation");
 
         // Create prepared statements
+
+        // TODO: add lightweight transaction to ensure unique confirmation number
         reservationsByConfirmationInsertPrepared = session.prepare(
                 "INSERT INTO reservations_by_confirmation (confirmation_number, hotel_id, start_date, " +
-                        "end_date, room_number, guest_id) VALUES (?, ?, ?, ?, ?, ?)");
+                        "end_date, room_number, guest_id) VALUES (?, ?, ?, ?, ?, ?) IF NOT EXISTS");
 
         reservationsByConfirmationSelectPrepared = session.prepare(
                 "SELECT * FROM reservations_by_confirmation where confirmation_number=?");
@@ -82,25 +81,23 @@ public class ReservationService {
         reservationsByConfirmationSelectAllPrepared = session.prepare(
                 "SELECT * FROM reservations_by_confirmation");
 
+        // TODO: add lightweight transaction to ensure no changes made to primary key columns of other table
         reservationsByConfirmationUpdatePrepared = session.prepare(
-                "UPDATE reservations_by_confirmation SET hotel_id=?, start_date=?, " +
-                        "end_date=?, room_number=?, guest_id=? WHERE confirmation_number=?");
+                "UPDATE reservations_by_confirmation SET end_date=?, guest_id=? WHERE confirmation_number=? " +
+                        "IF hotel_id=? AND start_date=? AND room_number=?");
 
         reservationsByConfirmationDeletePrepared = session.prepare(
                 "DELETE FROM reservations_by_confirmation WHERE confirmation_number=?");
 
-        // TODO: initialize prepared statement to insert into reservations_by_hotel_date table
         reservationsByHotelDateInsertPrepared = session.prepare(
                 "INSERT INTO reservations_by_hotel_date (confirmation_number, hotel_id, start_date, " +
                         "end_date, room_number, guest_id) VALUES (?, ?, ?, ?, ?, ?)");
 
-        // TODO: initialize prepared statement to update reservations_by_hotel_date table
-        // Hint: Which fields go in where clause? Do we allow updates of all fields?
+        // TODO: add lightweight transaction to make sure confirmation number is not changed  IF confirmation_number=?
         reservationsByHotelDateUpdatePrepared = session.prepare(
                 "UPDATE reservations_by_hotel_date SET end_date=?, guest_id=? " +
                         "WHERE hotel_id=? AND start_date=? AND room_number=?");
 
-        // TODO: initialize prepared statement to delete from reservations_by_hotel_date table
         reservationsByHotelDateDeletePrepared = session.prepare(
                 "DELETE FROM reservations_by_hotel_date WHERE hotel_id=? AND start_date=? AND room_number=?");
     }
@@ -136,7 +133,6 @@ public class ReservationService {
                 reservation.getRoomNumber(),
                 reservation.getGuestId());
 
-        // TODO: create BoundStatement using PreparedStatement for insert into reservations_by_hotel_date table
         Statement reservationsByHotelDateInsert = reservationsByHotelDateInsertPrepared.bind(
                 reservation.getConfirmationNumber(),
                 reservation.getHotelId(),
@@ -145,10 +141,7 @@ public class ReservationService {
                 reservation.getRoomNumber(),
                 reservation.getGuestId());
 
-        BatchStatement reservationBatchInsert = null;
-
-        // TODO: create BatchStatement containing our two insert statements
-        reservationBatchInsert = new BatchStatement();
+        BatchStatement reservationBatchInsert = new BatchStatement();
         reservationBatchInsert.add(reservationsByConfirmationInsert);
         reservationBatchInsert.add(reservationsByHotelDateInsert);
 
@@ -208,30 +201,33 @@ public class ReservationService {
         /*
          * Data Manipulation Logic
          */
-        Statement reservationsByConfirmationUpdate = reservationsByConfirmationUpdatePrepared.bind(
+
+        // TODO: Note that we can't include lightweight transactions in a batch, so we must execute separate statements
+        Statement reservationsByConfirmationUpdate = null;
+
+        // TODO: update binding to reference values compared in lightweight transaction
+        reservationsByConfirmationUpdate = reservationsByConfirmationUpdatePrepared.bind(
+                convertJavaLocalDateToDataStax(reservation.getEndDate()),
+                reservation.getGuestId(),
                 reservation.getConfirmationNumber(),
                 reservation.getHotelId(),
                 convertJavaLocalDateToDataStax(reservation.getStartDate()),
+                reservation.getRoomNumber());
+
+        session.execute(reservationsByConfirmationUpdate);
+
+        Statement reservationsByHotelDateUpdate = null;
+
+        // TODO: update binding with lightweight transaction to make sure confirmation number is not changed
+        reservationsByHotelDateUpdate = reservationsByHotelDateUpdatePrepared.bind(
                 convertJavaLocalDateToDataStax(reservation.getEndDate()),
-                reservation.getRoomNumber(),
-                reservation.getGuestId());
+                reservation.getGuestId(),
+                reservation.getHotelId(),
+                convertJavaLocalDateToDataStax(reservation.getStartDate()),
+                reservation.getRoomNumber());
 
-        // TODO: create BoundStatement using PreparedStatement for insert into reservations_by_hotel_date table
-        // TODO: do you notice a challenge?
-        Statement reservationsByHotelDateUpdate = reservationsByHotelDateUpdatePrepared.bind(
-                convertJavaLocalDateToDataStax(reservation.getEndDate()),
-                reservation.getRoomNumber(),
-                reservation.getGuestId());
+        session.execute(reservationsByHotelDateUpdate);
 
-        BatchStatement reservationBatchUpdate = null;
-
-        // TODO: create BatchStatement containing our two insert statements
-        reservationBatchUpdate = new BatchStatement();
-        reservationBatchUpdate.add(reservationsByConfirmationUpdate);
-        reservationBatchUpdate.add(reservationsByHotelDateUpdate);
-
-        // Execute the batch
-        session.execute(reservationBatchUpdate);
     }
 
     public List<Reservation> getAllReservations() {
@@ -274,7 +270,6 @@ public class ReservationService {
          * Data Manipulation Logic
          */
 
-        // TODO: Note new code added here
         // retrieve the reservation so we can get attributes we need to delete from reservations_by_hotel_date
         Reservation reservation = retrieveReservation(confirmationNumber);
         if (reservation == null) return;
@@ -283,16 +278,12 @@ public class ReservationService {
         // from the reservations_by_confirmation table
         Statement reservationsByConfirmationDelete = reservationsByConfirmationDeletePrepared.bind(confirmationNumber);
 
-        // TODO: create BoundStatement using PreparedStatement for delete from reservations_by_hotel_date table
         Statement reservationsByHotelDateDelete = reservationsByHotelDateDeletePrepared.bind(
                 reservation.getHotelId(),
                 convertJavaLocalDateToDataStax(reservation.getStartDate()),
                 reservation.getRoomNumber());
 
-        BatchStatement reservationBatchDelete = null;
-
-        // TODO: create BatchStatement containing our two delete statements
-        reservationBatchDelete = new BatchStatement();
+        BatchStatement reservationBatchDelete = new BatchStatement();
         reservationBatchDelete.add(reservationsByConfirmationDelete);
         reservationBatchDelete.add(reservationsByHotelDateDelete);
 
