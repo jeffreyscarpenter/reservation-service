@@ -89,7 +89,8 @@ public class ReservationService {
                 "DELETE FROM reservations_by_hotel_date WHERE hotel_id=? AND start_date=? AND room_number=?");
 
         // TODO: create prepared statement for searching on reservations_by_hotel_date table
-
+        reservationsByHotelDateSelectPrepared = session.prepare(
+                "SELECT * FROM reservations_by_hotel_date WHERE hotel_id=? AND start_date=?");
     }
 
     public String createReservation(Reservation reservation) {
@@ -222,6 +223,8 @@ public class ReservationService {
 
     public List<Reservation> searchReservationsByHotelDate(String hotelId, LocalDate date) {
 
+        // TODO: Note we've added a new implementation for this previously unsupported operation
+
         // for populating return value
         List<Reservation> reservations = new ArrayList<Reservation>();
 
@@ -232,7 +235,10 @@ public class ReservationService {
 
         // TODO: Use PreparedStatement to create a BoundStatement for retrieving reservations by hotelId and date
         // Hint: use the conversion function convertJavaLocalDateToDataStax()
-
+        reservationsByHotelDateSelect = reservationsByHotelDateSelectPrepared.bind(
+                hotelId,
+                convertJavaLocalDateToDataStax(date)
+        );
 
         // Override the default consistency level to use consistency level "ONE" for this query
         reservationsByHotelDateSelect.setConsistencyLevel(ConsistencyLevel.ONE);
