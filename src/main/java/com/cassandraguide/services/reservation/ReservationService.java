@@ -73,7 +73,7 @@ public class ReservationService {
         // TODO: add lightweight transaction to ensure unique confirmation number
         reservationsByConfirmationInsertPrepared = session.prepare(
                 "INSERT INTO reservations_by_confirmation (confirmation_number, hotel_id, start_date, " +
-                        "end_date, room_number, guest_id) VALUES (?, ?, ?, ?, ?, ?) IF NOT EXISTS");
+                        "end_date, room_number, guest_id) VALUES (?, ?, ?, ?, ?, ?)");
 
         reservationsByConfirmationSelectPrepared = session.prepare(
                 "SELECT * FROM reservations_by_confirmation where confirmation_number=?");
@@ -93,7 +93,7 @@ public class ReservationService {
                 "INSERT INTO reservations_by_hotel_date (confirmation_number, hotel_id, start_date, " +
                         "end_date, room_number, guest_id) VALUES (?, ?, ?, ?, ?, ?)");
 
-        // TODO: add lightweight transaction to make sure confirmation number is not changed  IF confirmation_number=?
+        // TODO: add lightweight transaction to make sure confirmation number is not changed
         reservationsByHotelDateUpdatePrepared = session.prepare(
                 "UPDATE reservations_by_hotel_date SET end_date=?, guest_id=? " +
                         "WHERE hotel_id=? AND start_date=? AND room_number=?");
@@ -206,25 +206,14 @@ public class ReservationService {
         Statement reservationsByConfirmationUpdate = null;
 
         // TODO: update binding to reference values compared in lightweight transaction
-        reservationsByConfirmationUpdate = reservationsByConfirmationUpdatePrepared.bind(
-                convertJavaLocalDateToDataStax(reservation.getEndDate()),
-                reservation.getGuestId(),
-                reservation.getConfirmationNumber(),
-                reservation.getHotelId(),
-                convertJavaLocalDateToDataStax(reservation.getStartDate()),
-                reservation.getRoomNumber());
+
 
         session.execute(reservationsByConfirmationUpdate);
 
         Statement reservationsByHotelDateUpdate = null;
 
         // TODO: update binding with lightweight transaction to make sure confirmation number is not changed
-        reservationsByHotelDateUpdate = reservationsByHotelDateUpdatePrepared.bind(
-                convertJavaLocalDateToDataStax(reservation.getEndDate()),
-                reservation.getGuestId(),
-                reservation.getHotelId(),
-                convertJavaLocalDateToDataStax(reservation.getStartDate()),
-                reservation.getRoomNumber());
+
 
         session.execute(reservationsByHotelDateUpdate);
 
