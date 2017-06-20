@@ -70,9 +70,6 @@ public class ReservationService {
         Cluster cluster = Cluster.builder()
                 .addContactPoints(cassandraConfiguration.getCassandraNodes())
                 .withQueryOptions(queryOptions)
-                .withLoadBalancingPolicy(new TokenAwarePolicy(new RoundRobinPolicy()))
-                .withSpeculativeExecutionPolicy(
-                        new PercentileSpeculativeExecutionPolicy(percentileTracker,99, 99))
                 .build();
 
         // Add LocalDateCodec to the Cluster's configuration
