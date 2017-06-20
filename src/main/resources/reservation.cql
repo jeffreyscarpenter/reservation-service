@@ -41,14 +41,11 @@ CREATE TABLE reservation.reservations_by_hotel_date (
     PRIMARY KEY ((hotel_id, start_date), room_number)
 ) WITH comment = 'Q7. Find reservations by hotel and date';
 
-CREATE TABLE reservation.reservations_by_confirmation (
-    confirmation_number text PRIMARY KEY,
-    hotel_id text,
-    start_date date,
-    end_date date,
-    room_number smallint,
-    guest_id uuid
-);
+CREATE MATERIALIZED VIEW reservation.reservations_by_confirmation AS
+    SELECT *
+    FROM reservation.reservations_by_hotel_date
+    WHERE confirmation_number IS NOT NULL AND hotel_id IS NOT NULL AND start_date IS NOT NULL AND room_number IS NOT NULL
+    PRIMARY KEY (confirmation_number, hotel_id, start_date, room_number);
 
 CREATE TABLE reservation.reservations_by_guest (
     guest_last_name text,

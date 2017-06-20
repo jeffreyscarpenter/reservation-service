@@ -18,9 +18,6 @@ package com.cassandraguide.services.reservation;
 import com.datastax.driver.core.*;
 import com.datastax.driver.extras.codecs.jdk8.LocalDateCodec;
 
-// TODO: import policies
-import com.datastax.driver.core.policies.*;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,14 +62,9 @@ public class ReservationService {
         PercentileTracker percentileTracker =
                 PerHostPercentileTracker.builder(10000).build();
 
-        // TODO: Configure the load balancing policy to be token aware, round robin (not DC aware)
-        // TODO: Enable a 99 percentile speculative execution policy with a maximum of 2 speculative executions and per host tracking
         Cluster cluster = Cluster.builder()
                 .addContactPoints(cassandraConfiguration.getCassandraNodes())
                 .withQueryOptions(queryOptions)
-                .withLoadBalancingPolicy(new TokenAwarePolicy(new RoundRobinPolicy()))
-                .withSpeculativeExecutionPolicy(
-                        new PercentileSpeculativeExecutionPolicy(percentileTracker,99, 99))
                 .build();
 
         // Add LocalDateCodec to the Cluster's configuration
