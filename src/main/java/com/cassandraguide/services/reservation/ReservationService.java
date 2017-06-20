@@ -16,9 +16,10 @@
 package com.cassandraguide.services.reservation;
 
 import com.datastax.driver.core.*;
-
-// TODO: Add import for LocalDateCodec
 import com.datastax.driver.extras.codecs.jdk8.LocalDateCodec;
+
+// TODO: import policies
+import com.datastax.driver.core.policies.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,12 +61,21 @@ public class ReservationService {
         queryOptions.setConsistencyLevel(ConsistencyLevel.valueOf(
                 cassandraConfiguration.getDefaultConsistencyLevel()));
 
+        // Per host latency tracker with maximum time of 10 seconds
+        PercentileTracker percentileTracker =
+                PerHostPercentileTracker.builder(10000).build();
+
+        // TODO: Configure the load balancing policy to be token aware, round robin (not DC aware)
+        // TODO: Enable a 99 percentile speculative execution policy with a maximum of 2 speculative executions and per host tracking
         Cluster cluster = Cluster.builder()
                 .addContactPoints(cassandraConfiguration.getCassandraNodes())
                 .withQueryOptions(queryOptions)
+                .withLoadBalancingPolicy(new TokenAwarePolicy(new RoundRobinPolicy()))
+                .withSpeculativeExecutionPolicy(
+                        new PercentileSpeculativeExecutionPolicy(percentileTracker,99, 99))
                 .build();
 
-        // TODO: add LocalDateCodec to the Cluster's configuration
+        // Add LocalDateCodec to the Cluster's configuration
         cluster.getConfiguration().getCodecRegistry().register(LocalDateCodec.instance);
 
         // Create session for reservation keyspace
@@ -116,7 +126,6 @@ public class ReservationService {
          * Data Manipulation Logic
          */
 
-        // TODO: Note we no longer need conversion method on start and end date
         Statement reservationsByHotelDateInsert = reservationsByHotelDateInsertPrepared.bind(
                 reservation.getConfirmationNumber(),
                 reservation.getHotelId(),
@@ -183,7 +192,6 @@ public class ReservationService {
          * Data Manipulation Logic
          */
 
-        // TODO: Note we no longer need conversion method on end date
         Statement reservationsByHotelDateUpdate = reservationsByHotelDateUpdatePrepared.bind(
                 reservation.getEndDate(),
                 reservation.getRoomNumber(),
@@ -232,7 +240,6 @@ public class ReservationService {
          */
         Statement reservationsByHotelDateSelect = null;
 
-        // TODO: Note we no longer need conversion method on (start) date
         reservationsByHotelDateSelect = reservationsByHotelDateSelectPrepared.bind(
                 hotelId,
                 date
@@ -261,7 +268,6 @@ public class ReservationService {
         Reservation reservation = retrieveReservation(confirmationNumber);
         if (reservation == null) return;
 
-        // TODO: Note we no longer need conversion method on start date
         Statement reservationsByHotelDateDelete = reservationsByHotelDateDeletePrepared.bind(
                 reservation.getHotelId(),
                 reservation.getStartDate(),
@@ -285,34 +291,14 @@ public class ReservationService {
         return confirmationNumber;
     }
 
-    // TODO: note removal of conversion method we no longer need
-    //private com.datastax.driver.core.LocalDate convertJavaLocalDateToDataStax(java.time.LocalDate date)
-    //{
-    //    if (date == null) return null;
-    //    int year=date.getYear();
-    //    int month = date.getMonthValue();
-    //    int day = date.getDayOfMonth();
-    //    return com.datastax.driver.core.LocalDate.fromYearMonthDay(year, month, day);
-    //}
-
-    // TODO: note removal of conversion method we no longer need
-    //private java.time.LocalDate convertDataStaxLocalDateToJava(com.datastax.driver.core.LocalDate date)
-    //{
-    //    if (date == null) return null;
-    //    return java.time.LocalDate.parse(date.toString());
-    //}
-
     // method to extract a Reservation from a row
     private Reservation extractReservationFromRow(Row row) {
         Reservation reservation;
         reservation = new Reservation();
         reservation.setConfirmationNumber(row.getString("confirmation_number"));
         reservation.setHotelId(row.getString("hotel_id"));
-
-        // TODO: note use of get(String, Class) operation to specify the desired output type
         reservation.setStartDate(row.get("start_date", java.time.LocalDate.class));
         reservation.setEndDate(row.get("end_date", java.time.LocalDate.class));
-
         reservation.setGuestId(row.getUUID("guest_id"));
         reservation.setRoomNumber(row.getShort("room_number"));
         return reservation;
