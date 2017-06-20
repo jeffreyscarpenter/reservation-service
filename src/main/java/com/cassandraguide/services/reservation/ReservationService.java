@@ -18,7 +18,6 @@ package com.cassandraguide.services.reservation;
 import com.datastax.driver.core.*;
 
 // TODO: Add import for LocalDateCodec
-import com.datastax.driver.extras.codecs.jdk8.LocalDateCodec;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,7 +65,6 @@ public class ReservationService {
                 .build();
 
         // TODO: add LocalDateCodec to the Cluster's configuration
-        cluster.getConfiguration().getCodecRegistry().register(LocalDateCodec.instance);
 
         // Create session for reservation keyspace
         session = cluster.connect("reservation");

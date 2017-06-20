@@ -64,11 +64,6 @@
 
         <!-- TODO: Add cassandra-driver-extras dependency for access to codecs -->
         <!-- DataStax Java Driver - Codecs, etc -->
-        <dependency>
-            <groupId>com.datastax.cassandra</groupId>
-            <artifactId>cassandra-driver-extras</artifactId>
-            <version>3.2.0</version>
-        </dependency>
 
     </dependencies>
 
