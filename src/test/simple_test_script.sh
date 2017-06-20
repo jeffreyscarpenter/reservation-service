@@ -18,3 +18,7 @@ curl http://localhost:8080/reservations/
 # deleteReservation()
 # Change the confirmation code as needed
 curl -X DELETE http://localhost:8080/reservations/RS2G0Z
+
+# searchReservationsByHotelDate()
+# Note use of single quotes around URL so that ampersand is not interpreted as a command separator by shell
+curl 'http://localhost:8080/reservations/?hotelId=NY456&startDate=2017-06-08'
