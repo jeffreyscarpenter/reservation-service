@@ -47,7 +47,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 [tutorial]: http://www.springboottutorial.com/creating-rest-service-with-spring-boot
-[schema]: /resources/reservation.cql
+[schema]: /src/main/resources/reservation.cql
 [dmmw]: https://medium.com/@jscarp/data-model-meets-world-c67a46681b39
 [identity]: https://medium.com/@jscarp/data-model-meets-world-part-ii-identity-crisis-d517d3d4c39a
 [chapter]: https://www.oreilly.com/ideas/cassandra-data-modeling
