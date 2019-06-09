@@ -19,16 +19,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalDate;
 
 // DataStax Java Driver imports
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.core.Row;
-import com.datastax.driver.core.Session;
-import com.datastax.driver.core.SimpleStatement;
+import com.datastax.oss.driver.api.core.CqlSession;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 
 @Component
 public class ReservationService {
@@ -36,17 +37,15 @@ public class ReservationService {
     private static final Logger logger = LoggerFactory.getLogger(ReservationService.class);
 
     // TODO: private variable to hold DataStax Java Driver Session - used for executing queries
-    private Session session;
+    private CqlSession session;
 
     public ReservationService() {
 
-        // TODO: Create cluster with connection to localhost
-        Cluster cluster = Cluster.builder()
-                .addContactPoint("127.0.0.1")
+        // TODO: Create session with connection to localhost for reservation keyspace
+        session = CqlSession.builder()
+                .addContactPoint(new InetSocketAddress("127.0.0.1", 9042))
+                .withKeyspace(CqlIdentifier.fromCql("reservation"))
                 .build();
-
-        // TODO: Create session for reservation keyspace
-        session = cluster.connect("reservation");
     }
 
     public String createReservation(Reservation reservation) {
@@ -75,15 +74,16 @@ public class ReservationService {
         // TODO: Construct SimpleStatement for inserting the reservation
         // For this exercise we will insert only into the reservations_by_confirmation table
         // Hint: use provided convenience function convertJavaLocalDateToDataStax for start and end dates
-        SimpleStatement reservationsByConfirmationInsert = new SimpleStatement(
+        SimpleStatement reservationsByConfirmationInsert = SimpleStatement.builder(
                 "INSERT INTO reservations_by_confirmation (confirmation_number, hotel_id, start_date, " +
-                        "end_date, room_number, guest_id) VALUES (?, ?, ?, ?, ?, ?)",
-                reservation.getConfirmationNumber(),
-                reservation.getHotelId(),
-                convertJavaLocalDateToDataStax(reservation.getStartDate()),
-                convertJavaLocalDateToDataStax(reservation.getEndDate()),
-                reservation.getRoomNumber(),
-                reservation.getGuestId());
+                        "end_date, room_number, guest_id) VALUES (?, ?, ?, ?, ?, ?)")
+                .addPositionalValue(reservation.getConfirmationNumber())
+                .addPositionalValue(reservation.getHotelId())
+                .addPositionalValue(reservation.getStartDate())
+                .addPositionalValue(reservation.getEndDate())
+                .addPositionalValue(reservation.getRoomNumber())
+                .addPositionalValue(reservation.getGuestId())
+                .build();
 
         // TODO: Execute the statement
         session.execute(reservationsByConfirmationInsert);
@@ -102,9 +102,10 @@ public class ReservationService {
 
         // TODO: Construct SimpleStatement for retrieving the reservation from the reservations_by_confirmation table
         // Hint: Remember to use parameterization
-        SimpleStatement reservationsByConfirmationSelect = new SimpleStatement(
-                "SELECT * FROM reservations_by_confirmation where confirmation_number=?",
-                confirmationNumber);
+        SimpleStatement reservationsByConfirmationSelect = SimpleStatement.builder(
+                "SELECT * FROM reservations_by_confirmation where confirmation_number=?")
+                .addPositionalValue(confirmationNumber)
+                .build();
 
         // TODO: Execute the statement
         ResultSet resultSet = session.execute(reservationsByConfirmationSelect);
@@ -149,16 +150,16 @@ public class ReservationService {
 
         // TODO: Construct SimpleStatement for updating the reservation
         // For this exercise we will insert only into the reservations_by_confirmation table
-        SimpleStatement reservationsByConfirmationUpdate = new SimpleStatement(
+        SimpleStatement reservationsByConfirmationUpdate = SimpleStatement.builder(
                 "UPDATE reservations_by_confirmation SET hotel_id=?, start_date=?, " +
-                        "end_date=?, room_number=?, guest_id=? WHERE confirmation_number=?",
-                reservation.getHotelId(),
-                convertJavaLocalDateToDataStax(reservation.getStartDate()),
-                convertJavaLocalDateToDataStax(reservation.getEndDate()),
-                reservation.getRoomNumber(),
-                reservation.getGuestId(),
-                reservation.getConfirmationNumber()
-        );
+                        "end_date=?, room_number=?, guest_id=? WHERE confirmation_number=?")
+                .addPositionalValue(reservation.getHotelId())
+                .addPositionalValue(reservation.getStartDate())
+                .addPositionalValue(reservation.getEndDate())
+                .addPositionalValue(reservation.getRoomNumber())
+                .addPositionalValue(reservation.getGuestId())
+                .addPositionalValue(reservation.getConfirmationNumber())
+                .build();
 
         // TODO: Execute the statement
         session.execute(reservationsByConfirmationUpdate);
@@ -174,7 +175,7 @@ public class ReservationService {
          */
 
         // TODO: Construct SimpleStatement for retrieving the entire contents of the reservations_by_confirmation table
-        SimpleStatement reservationsByConfirmationSelectAll = new SimpleStatement(
+        SimpleStatement reservationsByConfirmationSelectAll = SimpleStatement.newInstance(
                 "SELECT * FROM reservations_by_confirmation");
 
         // TODO: Execute the statement to get a result set
@@ -202,9 +203,10 @@ public class ReservationService {
          */
 
         // TODO: Construct SimpleStatement for deleting the selected item from the reservations_by_confirmation table
-        SimpleStatement reservationsByConfirmationDelete = new SimpleStatement(
-                "DELETE * FROM reservations_by_confirmation WHERE confirmation_number=?",
-                confirmationNumber);
+        SimpleStatement reservationsByConfirmationDelete = SimpleStatement.builder(
+                "DELETE * FROM reservations_by_confirmation WHERE confirmation_number=?")
+                .addPositionalValue(confirmationNumber)
+                .build();
 
         // TODO: Execute the statement
         session.execute(reservationsByConfirmationDelete);
@@ -224,32 +226,15 @@ public class ReservationService {
         return confirmationNumber;
     }
 
-    // convenience method to be replaced in a later exercise by codecs
-    private com.datastax.driver.core.LocalDate convertJavaLocalDateToDataStax(java.time.LocalDate date)
-    {
-        if (date == null) return null;
-        int year=date.getYear();
-        int month = date.getMonthValue();
-        int day = date.getDayOfMonth();
-        return com.datastax.driver.core.LocalDate.fromYearMonthDay(year, month, day);
-    }
-
-    // convenience method to be replaced in a later exercise by codecs
-    private java.time.LocalDate convertDataStaxLocalDateToJava(com.datastax.driver.core.LocalDate date)
-    {
-        if (date == null) return null;
-        return java.time.LocalDate.parse(date.toString());
-    }
-
     // TODO: method to extract a Reservation from a row
     private Reservation extractReservationFromRow(Row row) {
         Reservation reservation;
         reservation = new Reservation();
         reservation.setConfirmationNumber(row.getString("confirmation_number"));
         reservation.setHotelId(row.getString("hotel_id"));
-        reservation.setStartDate(convertDataStaxLocalDateToJava(row.getDate("start_date")));
-        reservation.setEndDate(convertDataStaxLocalDateToJava(row.getDate("end_date")));
-        reservation.setGuestId(row.getUUID("guest_id"));
+        reservation.setStartDate(row.getLocalDate("start_date"));
+        reservation.setEndDate(row.getLocalDate("end_date"));
+        reservation.setGuestId(row.getUuid("guest_id"));
         reservation.setRoomNumber(row.getShort("room_number"));
         return reservation;
     }
