@@ -1,0 +1,24 @@
+[UPDATES]
+- Update to JDK 11
+- Update to lastest mvn compiler
+- Update to latest Spring-boot
+- Update to latest Datastax Java Driver
+- Update to JUNIT 5
+
+[New FILES]
+- Introducing a logback.xml to set up logs in the console
+- Create a banner.txt to customize output
+- Create a configuration file for the driver application.conf
+
+[Changes]
+- Inversion of control through constructor and not autowired
+- Generating API Documentation with Swagger
+- Introducing a home controller to redirect to API Documentation
+- Schema creation at startup (keyspaces + tables)
+- Externalization of configuration in application.properties files
+- Introducing Create a Docker Compose to run Cassandra locally (- docker exec -it `docker ps | grep cassandra:3.11.4 | cut -b 1-12` cqlsh)
+- Refactoring to use Resources naming
+
+
+docker exec -it `docker ps | grep cassandra:3.11.4 | cut -b 1-12` cqlsh
+
