@@ -11,8 +11,5 @@ ${AnsiColor.RED} \    \_\  \  |  /  / /_/ \  ___/
 ${AnsiColor.RED}  \______  /____/|__\____ |\___  >
 ${AnsiColor.RED}         \/              \/    \/ 
 ${AnsiColor.RED}
-
-${AnsiColor.BLUE} Cassandra, The Definitive Guide
-
+${AnsiColor.BLUE} Cassandra, The Definitive Guide (http://shop.oreilly.com/product/0636920043041.do)
 ${AnsiColor.BLUE} Author: Jeff Carpenter
-${AnsiColor.BLUE} Purchase at : http://shop.oreilly.com/product/0636920043041.do${AnsiColor.DEFAULT}

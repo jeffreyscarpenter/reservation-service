@@ -1,4 +1,4 @@
-package com.cassandraguide.reservation.api;
+package com.cassandraguide.conf;
 
 /*
  * #%L
@@ -23,7 +23,7 @@ package com.cassandraguide.reservation.api;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.cassandraguide.reservation.ReservationServiceApp;
+import com.cassandraguide.ReservationServiceApp;
 
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
@@ -40,14 +40,14 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  */
 @Configuration
 @EnableSwagger2
-public class SwaggerConfig {
+public class DocumentationApiConfiguration {
 
     @Bean
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
             .groupName("ReservationService")
             .select()
-            .apis(RequestHandlerSelectors.basePackage("com.cassandraguide.reservation.api"))
+            .apis(RequestHandlerSelectors.basePackage("com.cassandraguide.controller"))
             .paths(PathSelectors.regex("/api/v1.*"))
             .build()
             .apiInfo(apiInfo())

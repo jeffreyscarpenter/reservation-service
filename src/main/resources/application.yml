@@ -1,0 +1,22 @@
+# ----------------------------------------------------------
+# Spring Boot Config
+# ----------------------------------------------------------
+spring:
+  application:
+    name: Reservation Reservicess
+  jackson:
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false
+server:
+  port: 8080
+
+# ----------------------------------------------------------
+# DataStax Enterprise Java Driver Config
+# ----------------------------------------------------------
+cassandra:
+  contactPoint: 127.0.0.1
+  port: 9042
+  keyspaceName: reservation
+  localDataCenterName: datacenter1
+  dropSchema: false
+  

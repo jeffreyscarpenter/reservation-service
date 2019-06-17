@@ -7,7 +7,7 @@
     <root level="WARN">
         <appender-ref ref="STDOUT"/>
     </root>
+    <logger name="com.cassandraguide" level="INFO"/>
+    <logger name="com.cassandraguide.ReservationServiceApp" level="WARN" />
     <logger name="com.datastax.oss.driver" level="ERROR"/>
-    <logger name="com.cassandraguide.reservation" level="INFO"/>
-    <logger name="com.cassandraguide.reservation.ReservationServiceApp" level="WARN" />
 </configuration>
