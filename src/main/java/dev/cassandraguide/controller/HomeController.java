@@ -1,4 +1,4 @@
-package com.cassandraguide.controller;
+package dev.cassandraguide.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;

@@ -1,4 +1,4 @@
-package com.cassandraguide.model;
+package dev.cassandraguide.model;
 
 import java.io.Serializable;
 import java.time.LocalDate;

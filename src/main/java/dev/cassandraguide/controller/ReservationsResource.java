@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cassandraguide.controller;
+package dev.cassandraguide.controller;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
@@ -31,6 +31,9 @@ import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 
+import dev.cassandraguide.model.Reservation;
+import dev.cassandraguide.model.ReservationRequest;
+import dev.cassandraguide.repository.ReservationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -45,9 +48,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.cassandraguide.model.Reservation;
-import com.cassandraguide.model.ReservationRequest;
-import com.cassandraguide.repository.ReservationRepository;
 import com.datastax.oss.driver.api.core.DriverException;
 
 import io.swagger.annotations.Api;

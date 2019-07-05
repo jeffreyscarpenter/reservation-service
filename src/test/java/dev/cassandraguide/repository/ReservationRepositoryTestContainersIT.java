@@ -1,4 +1,4 @@
-package com.cassandraguide.repository;
+package dev.cassandraguide.repository;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -12,8 +12,8 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.CassandraContainer;
 import org.testcontainers.containers.GenericContainer;
 
-import com.cassandraguide.conf.CassandraConfiguration;
-import com.cassandraguide.model.Reservation;
+import dev.cassandraguide.conf.CassandraConfiguration;
+import dev.cassandraguide.model.Reservation;
 
 /**
  * An integration test for {@link ReservationRepositoryTest}. 

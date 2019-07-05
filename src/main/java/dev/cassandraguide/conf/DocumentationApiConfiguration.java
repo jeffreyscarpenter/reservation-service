@@ -1,4 +1,4 @@
-package com.cassandraguide.conf;
+package dev.cassandraguide.conf;
 
 /*
  * #%L
@@ -23,7 +23,7 @@ package com.cassandraguide.conf;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.cassandraguide.ReservationServiceApp;
+import dev.cassandraguide.ReservationServiceApp;
 
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
