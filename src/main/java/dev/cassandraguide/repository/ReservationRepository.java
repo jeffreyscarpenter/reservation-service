@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Jeff Carpenter
+ * Copyright (C) 2017-2019 Jeff Carpenter
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -129,7 +129,7 @@ public class ReservationRepository {
     
     /**
      * Testing existence is relevant to avoid mapping. To evaluate existence find the table 
-     * where confirnation number is partition key which is reservations_by_confirmation
+     * where confirmation number is partition key which is reservations_by_confirmation
      * 
      * @param confirmationNumber
      *      unique identifier for confirmation
@@ -163,7 +163,6 @@ public class ReservationRepository {
         }
         
         // Hint: If there is a result, create a new reservation object and set the values
-        // Hint: use provided convenience function convertDataStaxLocalDateToJava for start and end dates
         // Bonus: factor the logic to extract a reservation from a row into a separate method
         // (you will reuse it again later in getAllReservations())
         return Optional.of(mapRowToReservation(row));
@@ -216,7 +215,7 @@ public class ReservationRepository {
     }
       
     /**
-     * Deleting a reservation. As not returned value why not switching to ASYNC.
+     * Deleting a reservation.
      *
      * @param confirmationNumber
      *      unique identifier for confirmation.

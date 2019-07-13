@@ -7,10 +7,9 @@ services:
       - 7001:7001
       - 7199:7199
       - 9042:9042
-      - 9160:9160
     ulimits:
       memlock: -1
-    # If you want to data
+    # If you want to save data directories across runs
     # volumes:
     #   - ~/cassandra/:/var/lib/cassandra/data
  

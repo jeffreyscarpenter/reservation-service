@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Jeff Carpenter
+ * Copyright (C) 2017-2019 Jeff Carpenter
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,13 +60,13 @@ import io.swagger.annotations.ApiResponses;
 
 /**
  * REST Resources working with {@link Reservation}.
- * This CRUD resource leverages on standard HTTP Codes and patterns.
+ * This CRUD resource leverages standard HTTP Codes and patterns.
  * 
  * GET    /                     : Will list all Reservations
- * POST   /                     : Will create a new Reservation generating a confirmation Number
- * GET    /{confirmationNumber} : Will get the reservation if exist or send not found
- * DELETE /{confirmationNumber} : Will delete the reservation if exist or send not found
- * PUT    /{confirmationNumber} : Will upsert a reservation
+ * POST   /                     : Will create a new Reservation, returning a confirmation number
+ * GET    /{confirmationNumber} : Will get the reservation if it exists or send not found
+ * DELETE /{confirmationNumber} : Will delete the reservation if exists or send not found
+ * PUT    /{confirmationNumber} : Will update a reservation
  * GET    /findByHotelAndDate   : Search a list of reservations 
  * 
  */
@@ -79,7 +79,7 @@ public class ReservationsResource {
     /** Logger for the class. */
     private static final Logger logger = LoggerFactory.getLogger(ReservationsResource.class);
     
-    /** Service implementation Injection. */
+    /** Service implementation injection. */
     private ReservationRepository reservationService;
 
     /**
@@ -93,30 +93,30 @@ public class ReservationsResource {
     }
     
     /**
-     * List all reservation in DB. Please not there is no implementation of paging. As such result can be
-     * really large. If you query tables with large number of rows, please use Paging.
+     * List all reservations. Please note there is no implementation of paging. As such the results can be
+     * quite large. If you query tables with a large number of rows, please use paging.
      *  
      * @return
-     *      list all {@link Reservation} available in the table 
+     *      list of all {@link Reservation} available
      */
     @RequestMapping(
             method = GET,
             value = "/",
             produces = APPLICATION_JSON_VALUE)
     @ApiOperation(
-            value = "List all reservations available in the table", response = List.class)
+            value = "List all reservations available", response = List.class)
     @ApiResponse(
             code = 200,
-            message = "List all reservations available in the table")
+            message = "List all reservations available")
     public ResponseEntity<List<Reservation>> findAll() {
         logger.debug("Fetching all reservations");
-        // Returning an empty list is better than 204 code (meaning no valued expected)
+        // Returning an empty list is better than 204 code (meaning no value expected)
         return ResponseEntity.ok(reservationService.findAll());
     }
     
     /**
      * As no confirmation number has been provided this will create a new reservation
-     * and GENERATE the confirmation number. If you already now it, use the PUT resource.
+     * and GENERATE the confirmation number. To update a previous reservation, use the PUT resource.
      */
     @RequestMapping(
             method = POST,
@@ -133,14 +133,14 @@ public class ReservationsResource {
             name = "ReservationRequest",
             value = "A JSON value representing a reservation.\n"
                     + "An example of the expected schema can be found down here. "
-                    + "The fields marked with * means that they are required. "
+                    + "The fields marked with * are required. "
                     + "See the schema of ReservationRequest for more information.",
             required = true, dataType = "ReservationRequest", paramType = "body")
     })
     public ResponseEntity<String> create(
             HttpServletRequest request,
             @RequestBody ReservationRequest reservationRequest) {
-        // If reservation cannot be marshalled Spring will throw illegalArgument catch with badRequestHandler
+        // If reservation cannot be marshalled Spring will throw IllegalArgument catch with badRequestHandler
         // As no reservation number provided, one has been generated and returned
         String confirmationNumber = reservationService.upsert(new Reservation(reservationRequest));
         // HTTP Created spec, return target resource in 'location' header
@@ -168,7 +168,7 @@ public class ReservationsResource {
             value = "Access Reservation information if exists", 
             response = Reservation.class)
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returnings Reservation"),
+            @ApiResponse(code = 200, message = "Returning Reservation"),
             @ApiResponse(code = 400, message = "ConfirmationNumber is blank or contains invalid characters (expecting AlphaNumeric)"),
             @ApiResponse(code = 404, message = "No reservation exists for the provided confirmation number ")
     })
@@ -184,14 +184,14 @@ public class ReservationsResource {
         Optional<Reservation> reservation = reservationService.findByConfirmationNumber(confirmationNumber);
         // Routing Result
         if (!reservation.isPresent()) {
-            logger.warn("Reservation with confirmation number {} has not been found", confirmationNumber);
+            logger.warn("Reservation with confirmation number {} not  found", confirmationNumber);
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(reservation.get());
     }
     
     /**
-     * Upsert reservation when confirmation number is provided (specify with PUT HTTP Verb)
+     * Update reservation when confirmation number is provided (specify with PUT HTTP Verb)
      *
      * @param confirmationNumber
      *      unique confirmation number

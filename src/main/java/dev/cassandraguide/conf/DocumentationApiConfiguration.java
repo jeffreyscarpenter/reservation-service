@@ -1,24 +1,19 @@
-package dev.cassandraguide.conf;
-
 /*
- * #%L
- * ff4j-spring-boot-web-api
- * %%
- * Copyright (C) 2013 - 2016 FF4J
- * %%
+ * Copyright (C) 2017-2019 Jeff Carpenter
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * #L%
  */
+package dev.cassandraguide.conf;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -47,7 +42,7 @@ public class DocumentationApiConfiguration {
         return new Docket(DocumentationType.SWAGGER_2)
             .groupName("ReservationService")
             .select()
-            .apis(RequestHandlerSelectors.basePackage("com.cassandraguide.controller"))
+            .apis(RequestHandlerSelectors.basePackage("dev.cassandraguide.controller"))
             .paths(PathSelectors.regex("/api/v1.*"))
             .build()
             .apiInfo(apiInfo())
@@ -61,11 +56,11 @@ public class DocumentationApiConfiguration {
      */
     private ApiInfo apiInfo() {
         ApiInfoBuilder builder = new ApiInfoBuilder();
-        builder.title("Reservation Services RESTful API");
-        builder.description("Exercice 3b - Solution");
+        builder.title("Reservation Service RESTful API");
+        builder.description("Provides the ability to create, read, update and delete reservations.");
         builder.version(ReservationServiceApp.class.getPackage().getImplementationVersion());
-        builder.license("Apache Cassandra Definitive Guide");
-        builder.licenseUrl("http://shop.oreilly.com/product/0636920043041.do");
+        builder.license("Apache License, Version 2.0");
+        builder.licenseUrl("http://www.apache.org/licenses/LICENSE-2.0");
         return builder.build();
     }
 }

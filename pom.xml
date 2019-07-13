@@ -24,7 +24,7 @@
 		<swagger.version>2.9.2</swagger.version>
 		<junit-jupiter.version>5.4.2</junit-jupiter.version>
 		<junit-platform.version>1.4.2</junit-platform.version>
-		<oss-java-driver.version>4.0.1</oss-java-driver.version>
+		<oss-java-driver.version>4.1.0</oss-java-driver.version>
 		<testcontainers.version>1.11.3</testcontainers.version>
 
 		<version.maven.plugin.compiler>3.8.0</version.maven.plugin.compiler>
@@ -152,7 +152,15 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
-		</plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>12</source>
+                    <target>12</target>
+                </configuration>
+            </plugin>
+        </plugins>
 
 		<pluginManagement>
 			<plugins>
