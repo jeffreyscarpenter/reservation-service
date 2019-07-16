@@ -50,6 +50,12 @@ CREATE TABLE reservation.reservations_by_confirmation (
     guest_id uuid
 );
 
+
+/*
+ The following tables are provided for completeness with the book text, but they are not used in the current
+ implementation of the Reservation Service
+ */
+
 CREATE TABLE reservation.reservations_by_guest (
     guest_last_name text,
     hotel_id text,

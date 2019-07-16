@@ -31,7 +31,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 /**
  * Documentation of the API
  *
- * @author DataStax Evangelist Team
+ * @author Cedrick Lunven
  */
 @Configuration
 @EnableSwagger2

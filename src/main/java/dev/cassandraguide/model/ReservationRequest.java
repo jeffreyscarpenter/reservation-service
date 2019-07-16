@@ -25,11 +25,10 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * Reservation without the confirmation number.
  * 
- * Help customer avoiding asking questions if they have to provide
- * confirmation number or not. 
+ * Used to create a new reservation.
  */
 @ApiModel(value="ReservationRequest", 
-          description="ReservationRequest creation when the confirmation number is not provided yet")
+          description="ReservationRequest is used when a confirmation number has not yet been provided")
 public class ReservationRequest implements Serializable {
 
     /** Serial */
@@ -48,11 +47,11 @@ public class ReservationRequest implements Serializable {
     private LocalDate endDate;
     
     /** Room number. */
-    @ApiModelProperty(value = "Hotel real room number", example = "104")
+    @ApiModelProperty(value = "Hotel room number", example = "104")
     private short roomNumber;
     
     /** UUID. */
-    @ApiModelProperty(value = "Guest identifier as an uuid", example = "b9c5a9d8-9781-4de8-a00a-601a9cd6b366")
+    @ApiModelProperty(value = "Guest identifier as a UUID", example = "b9c5a9d8-9781-4de8-a00a-601a9cd6b366")
     private UUID guestId;
 
     /**

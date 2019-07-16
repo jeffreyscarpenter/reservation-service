@@ -132,7 +132,7 @@ public class ReservationsResource {
         @ApiImplicitParam(
             name = "ReservationRequest",
             value = "A JSON value representing a reservation.\n"
-                    + "An example of the expected schema can be found down here. "
+                    + "An example of the expected schema can be found below. "
                     + "The fields marked with * are required. "
                     + "See the schema of ReservationRequest for more information.",
             required = true, dataType = "ReservationRequest", paramType = "body")
@@ -141,7 +141,7 @@ public class ReservationsResource {
             HttpServletRequest request,
             @RequestBody ReservationRequest reservationRequest) {
         // If reservation cannot be marshalled Spring will throw IllegalArgument catch with badRequestHandler
-        // As no reservation number provided, one has been generated and returned
+        // As no reservation number is provided, one has been generated and returned
         String confirmationNumber = reservationService.upsert(new Reservation(reservationRequest));
         // HTTP Created spec, return target resource in 'location' header
         URI location = ServletUriComponentsBuilder.fromRequestUri(request)
@@ -169,7 +169,7 @@ public class ReservationsResource {
             response = Reservation.class)
     @ApiResponses({
             @ApiResponse(code = 200, message = "Returning Reservation"),
-            @ApiResponse(code = 400, message = "ConfirmationNumber is blank or contains invalid characters (expecting AlphaNumeric)"),
+            @ApiResponse(code = 400, message = "ConfirmationNumber is blank or contains invalid characters (expecting alphanumeric)"),
             @ApiResponse(code = 404, message = "No reservation exists for the provided confirmation number ")
     })
     public ResponseEntity<Reservation> findByConfirmationNumber(
@@ -208,12 +208,12 @@ public class ReservationsResource {
     @ApiResponses({
         @ApiResponse(code = 201, message = "Reservation has been created"),
         @ApiResponse(code = 204, message = "No content, reservation has been updated"),
-        @ApiResponse(code = 400, message = "ConfirmationNumber is blank or contains invalid characters (expecting AlphaNumeric)")
+        @ApiResponse(code = 400, message = "Confirmation number is blank or contains invalid characters (expecting alphanumeric)")
     })
     public ResponseEntity<Void> upsert(
             @ApiParam(name="confirmationNumber", 
                     example = "b9c5a9d8-9781-4de8-a00a-601a9cd6b366",
-                    value="confirmation number for a reservation", 
+                    value="Confirmation number for a reservation",
                     required=true )
             @PathVariable(value = "confirmationNumber") String confirmationNumber,
             @RequestBody ReservationRequest reservation) {
@@ -231,18 +231,18 @@ public class ReservationsResource {
     @ApiOperation(value = "Delete a reservation", response = ResponseEntity.class)
     @ApiResponses({
             @ApiResponse(code = 204, message = "No content, reservation has been deleted"),
-            @ApiResponse(code = 400, message = "ConfirmationNumber is blank or contains invalid characters (expecting AlphaNumeric)"),
+            @ApiResponse(code = 400, message = "Confirmation number is blank or contains invalid characters (expecting alphanumeric)"),
             @ApiResponse(code = 404, message = "The reservation does not exist")
     })
     public ResponseEntity<Void> delete(
             @ApiParam(name="confirmationNumber", 
-                      value="confirmation number for a reservation", 
+                      value="Confirmation number for a reservation",
                       example = "b9c5a9d8-9781-4de8-a00a-601a9cd6b366",
                       required=true)
             @PathVariable(value = "confirmationNumber") String confirmationNumber) {
         validateConfirmationNumber(confirmationNumber);
-        logger.debug("Fetching & Deleting reservation with confirmation number " + confirmationNumber);
-        if (!reservationService.exists(confirmationNumber)) {
+        logger.debug("Fetching & deleting reservation with confirmation number " + confirmationNumber);
+        if (!reservationService.delete(confirmationNumber)) {
             logger.error("Unable to delete. Reservation with confirmation number " +
                     confirmationNumber + " not found");
             return ResponseEntity.notFound().build();
@@ -252,7 +252,7 @@ public class ReservationsResource {
     }
 
     /**
-     * List reservation for an hotel id on a particular date.
+     * List reservation for a hotel id on a particular date.
      *
      * @param hotelId
      *      uniquement hotel identifier
@@ -265,11 +265,11 @@ public class ReservationsResource {
             method = GET, 
             produces = APPLICATION_JSON_VALUE)
     @ApiOperation(
-            value = "Access Reservation information for an hotel", 
+            value = "Access Reservation information for a hotel",
             response = Reservation.class)
     @ApiResponses({
-            @ApiResponse(code = 400, message = "Invalid Parameter Hotel id is blank or contains invalid characters "
-                    + "(expecting AlphaNumeric) or invalid date format expecting yyyy-MM-dd"),
+            @ApiResponse(code = 400, message = "Invalid Parameter: Hotel id is blank or contains invalid characters "
+                    + "(expecting alphanumeric) or invalid date format (expecting yyyy-MM-dd)"),
             @ApiResponse(code = 200, message = "Returnings Reservation")})
     public ResponseEntity<List<Reservation>> findByByHotelAndDate(
             @RequestParam("hotelId") 
@@ -284,7 +284,7 @@ public class ReservationsResource {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) 
             LocalDate date) {
         if (null == hotelId || hotelId.isEmpty()) {
-            throw new IllegalArgumentException("hotelId should not be null nor empty");
+            throw new IllegalArgumentException("hotelId may not be null nor empty");
         }
         // Error in date format would be detected on LocalDate Marshalling, no extra controls
         logger.debug("Receive request for hotelId:{}, {}", hotelId, date);
@@ -311,14 +311,14 @@ public class ReservationsResource {
     }
     
     /**
-     * Utility to validate confirmation Number.
+     * Utility to validate confirmation number.
      * 
      * @param cf
      *      confirmation number
      */
     private void validateConfirmationNumber(String cf) {
         if (null == cf || cf.isEmpty()) {
-            throw new IllegalArgumentException("confirmationNumber should not be null nor empty");
+            throw new IllegalArgumentException("confirmation number should not be null nor empty");
         }
         // Should be a valid uuid AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE or IllegalArgumentException
         UUID.fromString(cf);

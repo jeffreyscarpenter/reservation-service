@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * We redirect to the API documentation page
+ * Redirect to the API documentation page
  */
 @RestController
 @RequestMapping("/")

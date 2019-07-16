@@ -24,7 +24,7 @@ import io.swagger.annotations.ApiModelProperty;
  * Entity working with Reservation on Cassandra.
  */
 @ApiModel(value="ReservationConfirmation", 
-description="ReservationConfirmation  when the confirmation has been generated")
+description="ReservationConfirmation is used when a confirmation has been generated")
 
 public class ReservationConfirmation extends ReservationRequest {
 
@@ -32,7 +32,7 @@ public class ReservationConfirmation extends ReservationRequest {
     private static final long serialVersionUID = -3392237616280919281L;
     
     /** Confirmation for this Reservation. */
-    @ApiModelProperty(value = "Confirmation number as an uuid", example = "b9c5a9d8-9781-4de8-a00a-601a9cd6b366")
+    @ApiModelProperty(value = "Confirmation number as a UUID", example = "b9c5a9d8-9781-4de8-a00a-601a9cd6b366")
     private UUID confirmationNumber;
     
     /**

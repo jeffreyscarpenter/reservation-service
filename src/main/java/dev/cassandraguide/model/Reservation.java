@@ -27,7 +27,7 @@ public class Reservation implements Serializable {
     /** Serial. */
     private static final long serialVersionUID = -3392237616280919281L;
     
-    /** Hotel identifier, as Text not param. */
+    /** Hotel identifier, as Text not UUID (for simplicity). */
     private String hotelId;
     
     /** Formated as YYYY-MM-DD in interfaces. */

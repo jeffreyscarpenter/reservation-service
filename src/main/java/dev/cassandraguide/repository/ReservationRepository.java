@@ -66,7 +66,8 @@ public class ReservationRepository {
     
     // Reservation Schema Constants
     public static final CqlIdentifier TYPE_ADDRESS               = CqlIdentifier.fromCql("address");
-    public static final CqlIdentifier TABLE_RESERVATION_BY_HOTEL = CqlIdentifier.fromCql("reservations_by_hotel_date");
+    public static final CqlIdentifier TABLE_RESERVATION_BY_HOTEL_DATE =
+            CqlIdentifier.fromCql("reservations_by_hotel_date");
     public static final CqlIdentifier TABLE_RESERVATION_BY_CONFI = CqlIdentifier.fromCql("reservations_by_confirmation");
     public static final CqlIdentifier TABLE_RESERVATION_BY_GUEST = CqlIdentifier.fromCql("reservations_by_guest");
     public static final CqlIdentifier TABLE_GUESTS               = CqlIdentifier.fromCql("guests");
@@ -91,9 +92,10 @@ public class ReservationRepository {
     
     private PreparedStatement psExistReservation;
     private PreparedStatement psFindReservation;
-    private PreparedStatement psInsertReservationByHotel;
+    private PreparedStatement psInsertReservationByHotelDate;
     private PreparedStatement psInsertReservationByConfirmation;
-    private PreparedStatement psDeleteReservation;
+    private PreparedStatement psDeleteReservationByHotelDate;
+    private PreparedStatement psDeleteReservationByConfirmation;
     private PreparedStatement psSearchReservation;
     
     /** CqlSession holding metadata to interact with Cassandra. */
@@ -116,8 +118,8 @@ public class ReservationRepository {
     }
     
     /**
-     * CqlSession is a stateful object handling TCP connection.
-     * You may want to properly close sockets when you close you application
+     * CqlSession is a stateful object handling TCP connections to nodes in the cluster.
+     * This operation properly closes sockets when the application is stopped
      */
     @PreDestroy
     public void cleanup() {
@@ -128,13 +130,13 @@ public class ReservationRepository {
     }
     
     /**
-     * Testing existence is relevant to avoid mapping. To evaluate existence find the table 
-     * where confirmation number is partition key which is reservations_by_confirmation
+     * Testing existence is useful for building correct semantics in the RESTful API. To evaluate existence find the
+     * table where confirmation number is partition key which is reservations_by_confirmation
      * 
      * @param confirmationNumber
      *      unique identifier for confirmation
      * @return
-     *      if the reservation exist or not
+     *      true if the reservation exists, false if it does not
      */
     public boolean exists(String confirmationNumber) {
         return cqlSession.execute(psExistReservation.bind(confirmationNumber))
@@ -142,7 +144,7 @@ public class ReservationRepository {
     }
     
     /**
-     * Close from testing existence with Mapping and parsing of results.
+     * Similar to exists() but maps and parses results.
      * 
      * @param confirmationNumber
      *      unique identifier for confirmation
@@ -174,6 +176,7 @@ public class ReservationRepository {
      * @param reservation
      *      current reservation object
      * @return
+     *      confirmation number for the reservation
      *      
      */
      public String upsert(Reservation r) {
@@ -184,7 +187,7 @@ public class ReservationRepository {
         }
         // Insert into 'reservations_by_hotel_date'
         BoundStatement bsInsertReservationByHotel = 
-                psInsertReservationByHotel.bind(r.getHotelId(), r.getStartDate(), r.getEndDate(), 
+                psInsertReservationByHotelDate.bind(r.getHotelId(), r.getStartDate(), r.getEndDate(),
                                                 r.getRoomNumber(), r.getConfirmationNumber(), r.getGuestId());
         // Insert into 'reservations_by_confirmationumber'
         BoundStatement bsInsertReservationByConfirmation = 
@@ -203,8 +206,8 @@ public class ReservationRepository {
      * We pick 'reservations_by_confirmation' table to list reservations
      * BUT we could have used 'reservations_by_hotel_date' (as no key provided in request)
      *  
-     * @returns
-     *      list all reservations
+     * @return
+     *      list containing all reservations
      */
     public List<Reservation> findAll() {
         return cqlSession.execute(selectFrom(keyspaceName, TABLE_RESERVATION_BY_CONFI).all().build())
@@ -220,8 +223,33 @@ public class ReservationRepository {
      * @param confirmationNumber
      *      unique identifier for confirmation.
      */
-    public void delete(String confirmationNumber) {
-        cqlSession.execute(psDeleteReservation.bind(confirmationNumber));
+    public boolean delete(String confirmationNumber) {
+
+        // Retrieving entire reservation in order to obtain the attributes we will need to delete from
+        // reservations_by_hotel_date table
+        Optional<Reservation> reservationToDelete = this.findByConfirmationNumber(confirmationNumber);
+
+        if (reservationToDelete.isPresent()) {
+
+            // Delete from 'reservations_by_hotel_date'
+            Reservation reservation = reservationToDelete.get();
+            BoundStatement bsDeleteReservationByHotelDate =
+                    psDeleteReservationByHotelDate.bind(reservation.getHotelId(),
+                            reservation.getStartDate(), reservation.getRoomNumber());
+
+            // Delete from 'reservations_by_confirmation'
+            BoundStatement bsDeleteReservationByConfirmation =
+                    psDeleteReservationByConfirmation.bind(confirmationNumber);
+
+            BatchStatement batchDeleteReservation = BatchStatement
+                    .builder(DefaultBatchType.LOGGED)
+                    .addStatement(bsDeleteReservationByHotelDate)
+                    .addStatement(bsDeleteReservationByConfirmation)
+                    .build();
+            cqlSession.execute(batchDeleteReservation);
+            return true;
+        }
+        return false;
     }
     
     /**
@@ -232,6 +260,7 @@ public class ReservationRepository {
      * @param date
      *      searched Date
      * @return
+     *      list of reservations matching the search criteria
      */
     public List<Reservation> findByHotelAndDate(String hotelId, LocalDate date) {
         Objects.requireNonNull(hotelId);
@@ -244,10 +273,10 @@ public class ReservationRepository {
     }
 
     /**
-     * Utility method to marshall a row as expected Reservation Bean.
+     * Utility method to marshal a row as expected Reservation Bean.
      *
      * @param row
-     *      current row fron ResultSet
+     *      current row from ResultSet
      * @return
      *      object
      */
@@ -300,7 +329,7 @@ public class ReservationRepository {
          *  PRIMARY KEY ((hotel_id, start_date), room_number)
          * ) WITH comment = 'Q7. Find reservations by hotel and date';
          */
-        cqlSession.execute(createTable(keyspaceName, TABLE_RESERVATION_BY_HOTEL)
+        cqlSession.execute(createTable(keyspaceName, TABLE_RESERVATION_BY_HOTEL_DATE)
                         .ifNotExists()
                         .withPartitionKey(HOTEL_ID, DataTypes.TEXT)
                         .withPartitionKey(START_DATE, DataTypes.DATE)
@@ -311,7 +340,7 @@ public class ReservationRepository {
                         .withClusteringOrder(ROOM_NUMBER, ClusteringOrder.ASC)
                         .withComment("Q7. Find reservations by hotel and date")
                         .build());
-        logger.debug("+ Table '{}' has been created (if needed)", TABLE_RESERVATION_BY_HOTEL.asInternal());
+        logger.debug("+ Table '{}' has been created (if needed)", TABLE_RESERVATION_BY_HOTEL_DATE.asInternal());
         
         /**
          * CREATE TABLE reservation.reservations_by_confirmation (
@@ -392,8 +421,7 @@ public class ReservationRepository {
 
     private void prepareStatements() {
         if (psExistReservation == null) {
-            psExistReservation = cqlSession.prepare(
-                                selectFrom(keyspaceName, TABLE_RESERVATION_BY_CONFI).column(CONFIRMATION_NUMBER)
+            psExistReservation = cqlSession.prepare(selectFrom(keyspaceName, TABLE_RESERVATION_BY_CONFI).column(CONFIRMATION_NUMBER)
                                 .where(column(CONFIRMATION_NUMBER).isEqualTo(bindMarker(CONFIRMATION_NUMBER)))
                                 .build());
             psFindReservation = cqlSession.prepare(
@@ -401,15 +429,21 @@ public class ReservationRepository {
                                 .where(column(CONFIRMATION_NUMBER).isEqualTo(bindMarker(CONFIRMATION_NUMBER)))
                                 .build());
             psSearchReservation = cqlSession.prepare(
-                                selectFrom(keyspaceName, TABLE_RESERVATION_BY_HOTEL).all()
+                                selectFrom(keyspaceName, TABLE_RESERVATION_BY_HOTEL_DATE).all()
                                 .where(column(HOTEL_ID).isEqualTo(bindMarker(HOTEL_ID)))
                                 .where(column(START_DATE).isEqualTo(bindMarker(START_DATE)))
                                 .build());
-            psDeleteReservation = cqlSession.prepare(
+            psDeleteReservationByConfirmation = cqlSession.prepare(
                                 deleteFrom(keyspaceName, TABLE_RESERVATION_BY_CONFI)
                                 .where(column(CONFIRMATION_NUMBER).isEqualTo(bindMarker(CONFIRMATION_NUMBER)))
                                 .build());
-            psInsertReservationByHotel = cqlSession.prepare(QueryBuilder.insertInto(keyspaceName, TABLE_RESERVATION_BY_HOTEL)
+            psDeleteReservationByHotelDate = cqlSession.prepare(
+                    deleteFrom(keyspaceName, TABLE_RESERVATION_BY_HOTEL_DATE)
+                    .where(column(HOTEL_ID).isEqualTo(bindMarker(HOTEL_ID)))
+                    .where(column(START_DATE).isEqualTo(bindMarker(START_DATE)))
+                    .where(column(ROOM_NUMBER).isEqualTo(bindMarker(ROOM_NUMBER)))
+                    .build());
+            psInsertReservationByHotelDate = cqlSession.prepare(QueryBuilder.insertInto(keyspaceName, TABLE_RESERVATION_BY_HOTEL_DATE)
                     .value(HOTEL_ID, bindMarker(HOTEL_ID))
                     .value(START_DATE, bindMarker(START_DATE))
                     .value(END_DATE, bindMarker(END_DATE))
