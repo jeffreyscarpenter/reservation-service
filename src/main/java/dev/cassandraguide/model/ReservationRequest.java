@@ -26,6 +26,8 @@ import io.swagger.annotations.ApiModelProperty;
  * Reservation without the confirmation number.
  * 
  * Used to create a new reservation.
+ *
+ * @author Cedrick Lunven
  */
 @ApiModel(value="ReservationRequest", 
           description="ReservationRequest is used when a confirmation number has not yet been provided")

@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Redirect to the API documentation page
+ *
+ * @author Cedrick Lunven
  */
 @RestController
 @RequestMapping("/")

@@ -56,6 +56,8 @@ import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
  * The goal of this project is to provide a minimally functional implementation of a microservice 
  * that uses Apache Cassandra for its data storage. The reservation service is implemented as a 
  * RESTful service using Spring Boot.
+ *
+ * @author Jeff Carpenter, Cedrick Lunven
  */
 @Repository
 @Profile("!unit-test") // When I do some 'unit-test' no connectivity to DB

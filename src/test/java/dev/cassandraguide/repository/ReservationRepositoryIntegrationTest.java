@@ -22,7 +22,7 @@ import dev.cassandraguide.model.Reservation;
  * <p>There will be a single Container and schema is reinitialized at each method (to speed up).
  * <p>This unit test does not require a Spring application context to be created.
  *
- * @author Cedrick LUNVEN (@clunven)
+ * @author Cedrick Lunven
  */
 public class ReservationRepositoryIntegrationTest {
     

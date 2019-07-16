@@ -21,6 +21,8 @@ import java.util.UUID;
 
 /**
  * Entity working with Reservation on Cassandra.
+ *
+ * @author Jeff Carpenter
  */
 public class Reservation implements Serializable {
 

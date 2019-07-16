@@ -68,7 +68,8 @@ import io.swagger.annotations.ApiResponses;
  * DELETE /{confirmationNumber} : Will delete the reservation if exists or send not found
  * PUT    /{confirmationNumber} : Will update a reservation
  * GET    /findByHotelAndDate   : Search a list of reservations 
- * 
+ *
+ * @author Jeff Carpenter, Cedrick Lunven
  */
 @RestController
 @Api(value = "/api/v1/reservations",  

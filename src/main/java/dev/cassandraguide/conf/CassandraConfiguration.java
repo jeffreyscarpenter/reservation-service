@@ -32,6 +32,8 @@ import com.datastax.oss.driver.api.core.CqlSession;
 
 /**
  * Import Configuration from Configuration File
+ *
+ * @author Cedrick Lunven
  */
 @Configuration
 public class CassandraConfiguration {

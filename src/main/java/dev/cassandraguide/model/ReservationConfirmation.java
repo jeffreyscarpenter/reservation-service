@@ -22,6 +22,8 @@ import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Entity working with Reservation on Cassandra.
+ *
+ * @author Cedrick Lunven
  */
 @ApiModel(value="ReservationConfirmation", 
 description="ReservationConfirmation is used when a confirmation has been generated")
