@@ -152,7 +152,7 @@ public class ReservationRepository {
         // HINT: reuse code from exists() if you've already written that method
         SimpleStatement ssFindByConfirmationNumber = SimpleStatement.builder(
                 "SELECT * FROM reservations_by_confirmation WHERE confirmation_number = ?")
-                .addPositionalValue(confirmationNumber)
+                // HINT: use addPositionalValue() here
                 .build();
 
         ResultSet resultSet = cqlSession.execute(ssFindByConfirmationNumber);
@@ -191,12 +191,7 @@ public class ReservationRepository {
         SimpleStatement ssInsertReservationByHotelDate = SimpleStatement.builder(
                 "INSERT INTO reservations_by_hotel_date (confirmation_number, hotel_id, start_date, " +
                         "end_date, room_number, guest_id) VALUES (?, ?, ?, ?, ?, ?)")
-                .addPositionalValue(reservation.getConfirmationNumber())
-                .addPositionalValue(reservation.getHotelId())
-                .addPositionalValue(reservation.getStartDate())
-                .addPositionalValue(reservation.getEndDate())
-                .addPositionalValue(reservation.getRoomNumber())
-                .addPositionalValue(reservation.getGuestId())
+                // HINT: use addPositionalValue() here for each value
                 .build();
         cqlSession.execute(ssInsertReservationByHotelDate);
 
@@ -205,12 +200,7 @@ public class ReservationRepository {
          SimpleStatement ssInsertRreservationByConfirmation = SimpleStatement.builder(
                  "INSERT INTO reservations_by_confirmation (confirmation_number, hotel_id, start_date, " +
                          "end_date, room_number, guest_id) VALUES (?, ?, ?, ?, ?, ?)")
-                 .addPositionalValue(reservation.getConfirmationNumber())
-                 .addPositionalValue(reservation.getHotelId())
-                 .addPositionalValue(reservation.getStartDate())
-                 .addPositionalValue(reservation.getEndDate())
-                 .addPositionalValue(reservation.getRoomNumber())
-                 .addPositionalValue(reservation.getGuestId())
+                 // HINT: use addPositionalValue() here for each value
                  .build();
 
         cqlSession.execute(ssInsertRreservationByConfirmation);
@@ -228,7 +218,7 @@ public class ReservationRepository {
     public List<Reservation> findAll() {
 
         // TODO: Create SimpleStatement to read all rows from 'reservations_by_confirmation'
-        SimpleStatement ssFindAll = SimpleStatement.newInstance("SELECT * FROM reservations_by_confirmation");
+        SimpleStatement ssFindAll = SimpleStatement.newInstance("FIX ME");
 
         return cqlSession.execute(ssFindAll)
                   .all()                          // no paging we retrieve all objects
@@ -255,7 +245,7 @@ public class ReservationRepository {
 
             // TODO: Create SimpleStatement to delete from 'reservations_by_hotel_date'
             SimpleStatement ssDeleteReservationByHotelDate = SimpleStatement.builder(
-                    "DELETE FROM reservations_by_hotel_date WHERE hotel_id = ? AND start_date = ? AND room_number = ?")
+                    "WRITE THE QUERY THAT GOES HERE")
                     .addPositionalValue(reservation.getHotelId())
                     .addPositionalValue(reservation.getStartDate())
                     .addPositionalValue(reservation.getRoomNumber())
@@ -265,7 +255,7 @@ public class ReservationRepository {
 
             // TODO: Create SimpleStatement to delete from 'reservations_by_confirmation'
             SimpleStatement ssDeleteReservationByConfirmation = SimpleStatement.builder(
-                    "DELETE FROM reservations_by_confirmation WHERE confirmation_number = ?")
+                    "WRITE THE QUERY THAT GOES HERE")
                     .addPositionalValue(reservation.getConfirmationNumber())
                     .build();
 
@@ -290,11 +280,8 @@ public class ReservationRepository {
         Objects.requireNonNull(date);
 
         // TODO: Create SimpleStatement to search 'reservations_by_hotel_date'
-        SimpleStatement ssSearchReservationByHotelDate = SimpleStatement.builder(
-                "SELECT * FROM reservations_by_hotel_date WHERE hotel_id = ? AND start_date = ?")
-                .addPositionalValue(hotelId)
-                .addPositionalValue(date)
-                .build();
+        // HINT: remember you'll be using both the hotelId and date provided
+        SimpleStatement ssSearchReservationByHotelDate = null;  // See if you can do it all this time
 
         return cqlSession.execute(ssSearchReservationByHotelDate)
                          .all()                          // no paging we retrieve all objects
