@@ -181,27 +181,29 @@ public class ReservationRepository {
      *      confirmation number for the reservation
      *      
      */
-     public String upsert(Reservation r) {
-        Objects.requireNonNull(r);
-        if (null == r.getConfirmationNumber()) {
+     public String upsert(Reservation reservation) {
+        Objects.requireNonNull(reservation);
+        if (null == reservation.getConfirmationNumber()) {
             // Generating a new reservation number if none has been provided
-            r.setConfirmationNumber(UUID.randomUUID().toString());
+            reservation.setConfirmationNumber(UUID.randomUUID().toString());
         }
         // Insert into 'reservations_by_hotel_date'
         BoundStatement bsInsertReservationByHotel = 
-                psInsertReservationByHotelDate.bind(r.getHotelId(), r.getStartDate(), r.getEndDate(),
-                                                r.getRoomNumber(), r.getConfirmationNumber(), r.getGuestId());
+                psInsertReservationByHotelDate.bind(reservation.getHotelId(), reservation.getStartDate(),
+                        reservation.getEndDate(), reservation.getRoomNumber(), reservation.getConfirmationNumber(),
+                        reservation.getGuestId());
         // Insert into 'reservations_by_confirmationumber'
         BoundStatement bsInsertReservationByConfirmation = 
-                psInsertReservationByConfirmation.bind(r.getConfirmationNumber(), r.getHotelId(), r.getStartDate(), 
-                                                r.getEndDate(), r.getRoomNumber(), r.getGuestId());
+                psInsertReservationByConfirmation.bind(reservation.getConfirmationNumber(), reservation.getHotelId(),
+                        reservation.getStartDate(), reservation.getEndDate(), reservation.getRoomNumber(),
+                        reservation.getGuestId());
         BatchStatement batchInsertReservation = BatchStatement
                     .builder(DefaultBatchType.LOGGED)
                     .addStatement(bsInsertReservationByHotel)
                     .addStatement(bsInsertReservationByConfirmation)
                     .build();
         cqlSession.execute(batchInsertReservation);
-        return r.getConfirmationNumber();
+        return reservation.getConfirmationNumber();
     }
 
     /**
@@ -283,14 +285,14 @@ public class ReservationRepository {
      *      object
      */
     private Reservation mapRowToReservation(Row row) {
-        Reservation r = new Reservation();
-        r.setHotelId(row.getString(HOTEL_ID));
-        r.setConfirmationNumber(row.getString(CONFIRMATION_NUMBER));
-        r.setGuestId(row.getUuid(GUEST_ID));
-        r.setRoomNumber(row.getShort(ROOM_NUMBER));
-        r.setStartDate(row.getLocalDate(START_DATE));
-        r.setEndDate(row.getLocalDate(END_DATE));
-        return r;
+        Reservation reservation = new Reservation();
+        reservation.setHotelId(row.getString(HOTEL_ID));
+        reservation.setConfirmationNumber(row.getString(CONFIRMATION_NUMBER));
+        reservation.setGuestId(row.getUuid(GUEST_ID));
+        reservation.setRoomNumber(row.getShort(ROOM_NUMBER));
+        reservation.setStartDate(row.getLocalDate(START_DATE));
+        reservation.setEndDate(row.getLocalDate(END_DATE));
+        return reservation;
     }
     
     /**
