@@ -15,12 +15,8 @@
  */
 package dev.cassandraguide.repository;
 
-import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.bindMarker;
-import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.deleteFrom;
-import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.selectFrom;
 import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.createTable;
 import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.createType;
-import static com.datastax.oss.driver.api.querybuilder.relation.Relation.column;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -39,18 +35,16 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
+// TODO: Review the list of classes we import from the Java driver
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.cql.BatchStatement;
 import com.datastax.oss.driver.api.core.cql.BoundStatement;
-import com.datastax.oss.driver.api.core.cql.DefaultBatchType;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.metadata.schema.ClusteringOrder;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.core.type.UserDefinedType;
-import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 
 /**
  * The goal of this project is to provide a minimally functional implementation of a microservice 
@@ -91,9 +85,11 @@ public class ReservationRepository {
     public static final CqlIdentifier EMAILS                     = CqlIdentifier.fromCql("emails");
     public static final CqlIdentifier PHONE_NUMBERS              = CqlIdentifier.fromCql("phone_numbers");
     public static final CqlIdentifier ADDRESSES                  = CqlIdentifier.fromCql("addresses");
-    
+
+    // TODO: note addition of variables to hold PreparedStatements (we will initialize below)
     private PreparedStatement psExistReservation;
     private PreparedStatement psFindReservation;
+    private PreparedStatement psFindAllReservation;
     private PreparedStatement psInsertReservationByHotelDate;
     private PreparedStatement psInsertReservationByConfirmation;
     private PreparedStatement psDeleteReservationByHotelDate;
@@ -113,9 +109,11 @@ public class ReservationRepository {
         
         // Will create tables (if they do not exist)
         createReservationTables();
-        
+
+        // TODO: note addition of method to create PreparedStatements (we will implement this)
         // Prepare Statements of reservation
         prepareStatements();
+
         logger.info("Application initialized.");
     }
     
@@ -141,6 +139,8 @@ public class ReservationRepository {
      *      true if the reservation exists, false if it does not
      */
     public boolean exists(String confirmationNumber) {
+
+        // TODO: Review this example of creating and executing a BoundStatement
         return cqlSession.execute(psExistReservation.bind(confirmationNumber))
                          .getAvailableWithoutFetching() > 0;
     }
@@ -155,7 +155,8 @@ public class ReservationRepository {
      */
     @NonNull
     public Optional<Reservation> findByConfirmationNumber(@NonNull String confirmationNumber) {
-        
+
+        // TODO: Create and execute a BoundStatement using the PreparedStatement psFindReservation
         ResultSet resultSet = cqlSession.execute(psFindReservation.bind(confirmationNumber));
         
         // Hint: an empty result might not be an error as this method is sometimes used to check whether a
@@ -187,22 +188,22 @@ public class ReservationRepository {
             // Generating a new reservation number if none has been provided
             reservation.setConfirmationNumber(UUID.randomUUID().toString());
         }
-        // Insert into 'reservations_by_hotel_date'
-        BoundStatement bsInsertReservationByHotel = 
-                psInsertReservationByHotelDate.bind(reservation.getHotelId(), reservation.getStartDate(),
-                        reservation.getEndDate(), reservation.getRoomNumber(), reservation.getConfirmationNumber(),
+        // TODO: Review insert into 'reservations_by_hotel_date'
+        BoundStatement bsInsertReservationByHotel =
+                psInsertReservationByHotelDate.bind(reservation.getConfirmationNumber(), reservation.getHotelId(),
+                        reservation.getStartDate(), reservation.getEndDate(), reservation.getRoomNumber(),
                         reservation.getGuestId());
-        // Insert into 'reservations_by_confirmationumber'
-        BoundStatement bsInsertReservationByConfirmation = 
+
+        cqlSession.execute(bsInsertReservationByHotel);
+
+         // TODO: Insert into 'reservations_by_confirmation' using PreparedStatement psInsertReservationByConfirmation
+        BoundStatement bsInsertReservationByConfirmation =
                 psInsertReservationByConfirmation.bind(reservation.getConfirmationNumber(), reservation.getHotelId(),
                         reservation.getStartDate(), reservation.getEndDate(), reservation.getRoomNumber(),
                         reservation.getGuestId());
-        BatchStatement batchInsertReservation = BatchStatement
-                    .builder(DefaultBatchType.LOGGED)
-                    .addStatement(bsInsertReservationByHotel)
-                    .addStatement(bsInsertReservationByConfirmation)
-                    .build();
-        cqlSession.execute(batchInsertReservation);
+
+         cqlSession.execute(bsInsertReservationByConfirmation);
+
         return reservation.getConfirmationNumber();
     }
 
@@ -214,7 +215,11 @@ public class ReservationRepository {
      *      list containing all reservations
      */
     public List<Reservation> findAll() {
-        return cqlSession.execute(selectFrom(keyspaceName, TABLE_RESERVATION_BY_CONFI).all().build())
+
+        // TODO: Note we can use a PreparedStatement even if there are no parameters to bind
+        BoundStatement bsFindAllReservation = psFindAllReservation.bind();
+
+        return cqlSession.execute(bsFindAllReservation)
                   .all()                          // no paging we retrieve all objects
                   .stream()                       // because we are good people
                   .map(this::mapRowToReservation) // Mapping row as Reservation
@@ -235,22 +240,21 @@ public class ReservationRepository {
 
         if (reservationToDelete.isPresent()) {
 
-            // Delete from 'reservations_by_hotel_date'
             Reservation reservation = reservationToDelete.get();
+
+            // TODO: Delete from 'reservations_by_hotel_date' using PreparedStatement psDeleteReservationByHotelDate
+            // Hint: use values from the reservation object
             BoundStatement bsDeleteReservationByHotelDate =
                     psDeleteReservationByHotelDate.bind(reservation.getHotelId(),
                             reservation.getStartDate(), reservation.getRoomNumber());
 
-            // Delete from 'reservations_by_confirmation'
+            cqlSession.execute(bsDeleteReservationByHotelDate);
+
+            // TODO: Delete from 'reservations_by_confirmation' using PreparedStatement psDeleteReservationByConfirmation
             BoundStatement bsDeleteReservationByConfirmation =
                     psDeleteReservationByConfirmation.bind(confirmationNumber);
 
-            BatchStatement batchDeleteReservation = BatchStatement
-                    .builder(DefaultBatchType.LOGGED)
-                    .addStatement(bsDeleteReservationByHotelDate)
-                    .addStatement(bsDeleteReservationByConfirmation)
-                    .build();
-            cqlSession.execute(batchDeleteReservation);
+            cqlSession.execute(bsDeleteReservationByConfirmation);
             return true;
         }
         return false;
@@ -269,7 +273,11 @@ public class ReservationRepository {
     public List<Reservation> findByHotelAndDate(String hotelId, LocalDate date) {
         Objects.requireNonNull(hotelId);
         Objects.requireNonNull(date);
-        return cqlSession.execute(psSearchReservation.bind(hotelId, date))
+
+        // TODO: search 'reservations_by_hotel_date' using PreparedStatement psSearchReservation
+        BoundStatement bsSearchReservation = psSearchReservation.bind(hotelId, date);
+
+        return cqlSession.execute(bsSearchReservation)
                          .all()                          // no paging we retrieve all objects
                          .stream()                       // because we are good people
                          .map(this::mapRowToReservation) // Mapping row as Reservation
@@ -425,44 +433,34 @@ public class ReservationRepository {
 
     private void prepareStatements() {
         if (psExistReservation == null) {
-            psExistReservation = cqlSession.prepare(selectFrom(keyspaceName, TABLE_RESERVATION_BY_CONFI).column(CONFIRMATION_NUMBER)
-                                .where(column(CONFIRMATION_NUMBER).isEqualTo(bindMarker(CONFIRMATION_NUMBER)))
-                                .build());
+
+            // TODO: Review creation of PreparedStatements
+            psExistReservation = cqlSession.prepare(
+                    "SELECT confirmation_number FROM reservations_by_confirmation WHERE confirmation_number = ?");
+
             psFindReservation = cqlSession.prepare(
-                                selectFrom(keyspaceName, TABLE_RESERVATION_BY_CONFI).all()
-                                .where(column(CONFIRMATION_NUMBER).isEqualTo(bindMarker(CONFIRMATION_NUMBER)))
-                                .build());
+                    "SELECT * FROM reservations_by_confirmation WHERE confirmation_number = ?");
+
             psSearchReservation = cqlSession.prepare(
-                                selectFrom(keyspaceName, TABLE_RESERVATION_BY_HOTEL_DATE).all()
-                                .where(column(HOTEL_ID).isEqualTo(bindMarker(HOTEL_ID)))
-                                .where(column(START_DATE).isEqualTo(bindMarker(START_DATE)))
-                                .build());
+                    "SELECT * FROM reservations_by_hotel_date WHERE hotel_id = ? AND start_date = ?");
+
             psDeleteReservationByConfirmation = cqlSession.prepare(
-                                deleteFrom(keyspaceName, TABLE_RESERVATION_BY_CONFI)
-                                .where(column(CONFIRMATION_NUMBER).isEqualTo(bindMarker(CONFIRMATION_NUMBER)))
-                                .build());
+                    "DELETE FROM reservations_by_confirmation WHERE confirmation_number = ?");
+
             psDeleteReservationByHotelDate = cqlSession.prepare(
-                    deleteFrom(keyspaceName, TABLE_RESERVATION_BY_HOTEL_DATE)
-                    .where(column(HOTEL_ID).isEqualTo(bindMarker(HOTEL_ID)))
-                    .where(column(START_DATE).isEqualTo(bindMarker(START_DATE)))
-                    .where(column(ROOM_NUMBER).isEqualTo(bindMarker(ROOM_NUMBER)))
-                    .build());
-            psInsertReservationByHotelDate = cqlSession.prepare(QueryBuilder.insertInto(keyspaceName, TABLE_RESERVATION_BY_HOTEL_DATE)
-                    .value(HOTEL_ID, bindMarker(HOTEL_ID))
-                    .value(START_DATE, bindMarker(START_DATE))
-                    .value(END_DATE, bindMarker(END_DATE))
-                    .value(ROOM_NUMBER, bindMarker(ROOM_NUMBER))
-                    .value(CONFIRMATION_NUMBER, bindMarker(CONFIRMATION_NUMBER))
-                    .value(GUEST_ID, bindMarker(GUEST_ID))
-                    .build());
-            psInsertReservationByConfirmation = cqlSession.prepare(QueryBuilder.insertInto(keyspaceName, TABLE_RESERVATION_BY_CONFI)
-                    .value(CONFIRMATION_NUMBER, bindMarker(CONFIRMATION_NUMBER))
-                    .value(HOTEL_ID, bindMarker(HOTEL_ID))
-                    .value(START_DATE, bindMarker(START_DATE))
-                    .value(END_DATE, bindMarker(END_DATE))
-                    .value(ROOM_NUMBER, bindMarker(ROOM_NUMBER))
-                    .value(GUEST_ID, bindMarker(GUEST_ID))
-                    .build());
+                    "DELETE FROM reservations_by_hotel_date WHERE hotel_id = ? AND start_date = ? AND room_number = ?");
+
+            psInsertReservationByHotelDate = cqlSession.prepare(
+                    "INSERT INTO reservations_by_hotel_date (confirmation_number, hotel_id, start_date, " +
+                            "end_date, room_number, guest_id) VALUES (?, ?, ?, ?, ?, ?)");
+
+            psInsertReservationByConfirmation = cqlSession.prepare(
+                    "INSERT INTO reservations_by_confirmation (confirmation_number, hotel_id, start_date, " +
+                            "end_date, room_number, guest_id) VALUES (?, ?, ?, ?, ?, ?)");
+
+            // TODO: Can you create this one?
+            psFindAllReservation = cqlSession.prepare("SELECT * FROM reservations_by_confirmation");
+
             logger.info("Statements have been successfully prepared.");
         }
     }
