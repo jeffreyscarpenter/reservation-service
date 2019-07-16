@@ -157,7 +157,7 @@ public class ReservationRepository {
     public Optional<Reservation> findByConfirmationNumber(@NonNull String confirmationNumber) {
 
         // TODO: Create and execute a BoundStatement using the PreparedStatement psFindReservation
-        ResultSet resultSet = cqlSession.execute(psFindReservation.bind(confirmationNumber));
+        ResultSet resultSet = null; // WRITE ME
         
         // Hint: an empty result might not be an error as this method is sometimes used to check whether a
         // reservation with this confirmation number exists
@@ -197,10 +197,7 @@ public class ReservationRepository {
         cqlSession.execute(bsInsertReservationByHotel);
 
          // TODO: Insert into 'reservations_by_confirmation' using PreparedStatement psInsertReservationByConfirmation
-        BoundStatement bsInsertReservationByConfirmation =
-                psInsertReservationByConfirmation.bind(reservation.getConfirmationNumber(), reservation.getHotelId(),
-                        reservation.getStartDate(), reservation.getEndDate(), reservation.getRoomNumber(),
-                        reservation.getGuestId());
+        BoundStatement bsInsertReservationByConfirmation = null;  // WRITE ME
 
          cqlSession.execute(bsInsertReservationByConfirmation);
 
@@ -244,15 +241,12 @@ public class ReservationRepository {
 
             // TODO: Delete from 'reservations_by_hotel_date' using PreparedStatement psDeleteReservationByHotelDate
             // Hint: use values from the reservation object
-            BoundStatement bsDeleteReservationByHotelDate =
-                    psDeleteReservationByHotelDate.bind(reservation.getHotelId(),
-                            reservation.getStartDate(), reservation.getRoomNumber());
+            BoundStatement bsDeleteReservationByHotelDate = null; // WRITE ME
 
             cqlSession.execute(bsDeleteReservationByHotelDate);
 
             // TODO: Delete from 'reservations_by_confirmation' using PreparedStatement psDeleteReservationByConfirmation
-            BoundStatement bsDeleteReservationByConfirmation =
-                    psDeleteReservationByConfirmation.bind(confirmationNumber);
+            BoundStatement bsDeleteReservationByConfirmation = null; // WRITE ME
 
             cqlSession.execute(bsDeleteReservationByConfirmation);
             return true;
@@ -275,7 +269,7 @@ public class ReservationRepository {
         Objects.requireNonNull(date);
 
         // TODO: search 'reservations_by_hotel_date' using PreparedStatement psSearchReservation
-        BoundStatement bsSearchReservation = psSearchReservation.bind(hotelId, date);
+        BoundStatement bsSearchReservation = null; // WRITE ME
 
         return cqlSession.execute(bsSearchReservation)
                          .all()                          // no paging we retrieve all objects
@@ -459,7 +453,7 @@ public class ReservationRepository {
                             "end_date, room_number, guest_id) VALUES (?, ?, ?, ?, ?, ?)");
 
             // TODO: Can you create this one?
-            psFindAllReservation = cqlSession.prepare("SELECT * FROM reservations_by_confirmation");
+            psFindAllReservation = null; // WRITE ME
 
             logger.info("Statements have been successfully prepared.");
         }
