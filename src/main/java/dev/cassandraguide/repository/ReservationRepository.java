@@ -39,6 +39,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
+// TODO: Review the list of classes we import from the Java driver
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.BatchStatement;
@@ -197,6 +198,8 @@ public class ReservationRepository {
                 psInsertReservationByConfirmation.bind(reservation.getConfirmationNumber(), reservation.getHotelId(),
                         reservation.getStartDate(), reservation.getEndDate(), reservation.getRoomNumber(),
                         reservation.getGuestId());
+
+        // TODO: Review use of BatchStatement to insert into 'reservations_by_hotel_date' and 'reservations_by_confirmation'
         BatchStatement batchInsertReservation = BatchStatement
                     .builder(DefaultBatchType.LOGGED)
                     .addStatement(bsInsertReservationByHotel)
@@ -245,6 +248,7 @@ public class ReservationRepository {
             BoundStatement bsDeleteReservationByConfirmation =
                     psDeleteReservationByConfirmation.bind(confirmationNumber);
 
+            // TODO: Create BatchStatement to delete from 'reservations_by_hotel_date' and 'reservations_by_confirmation'
             BatchStatement batchDeleteReservation = BatchStatement
                     .builder(DefaultBatchType.LOGGED)
                     .addStatement(bsDeleteReservationByHotelDate)
