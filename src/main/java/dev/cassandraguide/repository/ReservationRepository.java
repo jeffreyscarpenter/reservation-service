@@ -482,15 +482,7 @@ public class ReservationRepository {
                     .build());
             // TODO: Create alternate PreparedStatement we can use to ensure uniqueness of the reservation
             // Hint: similar to psInsertReservationByHotelDate, but with a condition added
-            psInsertReservationByHotelDateUnique = cqlSession.prepare(QueryBuilder.insertInto(keyspaceName, TABLE_RESERVATION_BY_HOTEL_DATE)
-                    .value(HOTEL_ID, bindMarker(HOTEL_ID))
-                    .value(START_DATE, bindMarker(START_DATE))
-                    .value(END_DATE, bindMarker(END_DATE))
-                    .value(ROOM_NUMBER, bindMarker(ROOM_NUMBER))
-                    .value(CONFIRMATION_NUMBER, bindMarker(CONFIRMATION_NUMBER))
-                    .value(GUEST_ID, bindMarker(GUEST_ID))
-                    .ifNotExists()
-                    .build());
+            psInsertReservationByHotelDateUnique = null; // WRITE ME
             logger.info("Statements have been successfully prepared.");
         }
     }
