@@ -95,6 +95,7 @@ public class ReservationRepository {
     private PreparedStatement psExistReservation;
     private PreparedStatement psFindReservation;
     private PreparedStatement psInsertReservationByHotelDate;
+    private PreparedStatement psInsertReservationByHotelDateUnique;
     private PreparedStatement psInsertReservationByConfirmation;
     private PreparedStatement psDeleteReservationByHotelDate;
     private PreparedStatement psDeleteReservationByConfirmation;
@@ -183,26 +184,42 @@ public class ReservationRepository {
      */
      public String upsert(Reservation reservation) {
         Objects.requireNonNull(reservation);
-        if (null == reservation.getConfirmationNumber()) {
+
+        // TODO: Review updated flow for this method to ensure unique hotel ID/date/room number for new reservations
+         if (null == reservation.getConfirmationNumber()) {
             // Generating a new reservation number if none has been provided
             reservation.setConfirmationNumber(UUID.randomUUID().toString());
+
+             // TODO: Note we can't use a batch to group a conditional statement (LWT) with a mutation on another table
+             // Insert into 'reservations_by_hotel_date' with lightweight transaction
+             cqlSession.execute(psInsertReservationByHotelDateUnique.bind(reservation.getHotelId(),
+                     reservation.getStartDate(), reservation.getEndDate(), reservation.getRoomNumber(),
+                     reservation.getConfirmationNumber(), reservation.getGuestId()));
+
+             // Insert into 'reservations_by_confirmation'
+             cqlSession.execute(psInsertReservationByConfirmation.bind(reservation.getConfirmationNumber(),
+                     reservation.getHotelId(), reservation.getStartDate(), reservation.getEndDate(),
+                     reservation.getRoomNumber(), reservation.getGuestId()));
         }
-        // Insert into 'reservations_by_hotel_date'
-        BoundStatement bsInsertReservationByHotel = 
-                psInsertReservationByHotelDate.bind(reservation.getHotelId(), reservation.getStartDate(),
-                        reservation.getEndDate(), reservation.getRoomNumber(), reservation.getConfirmationNumber(),
-                        reservation.getGuestId());
-        // Insert into 'reservations_by_confirmationumber'
-        BoundStatement bsInsertReservationByConfirmation = 
+         else {
+             // Insert into 'reservations_by_hotel_date' without transaction
+             BoundStatement bsInsertReservationByHotel = psInsertReservationByHotelDate.bind(reservation.getHotelId(), reservation.getStartDate(),
+                     reservation.getEndDate(), reservation.getRoomNumber(), reservation.getConfirmationNumber(),
+                     reservation.getGuestId());
+
+             // Insert into 'reservations_by_confirmation'
+             BoundStatement bsInsertReservationByConfirmation =
                 psInsertReservationByConfirmation.bind(reservation.getConfirmationNumber(), reservation.getHotelId(),
                         reservation.getStartDate(), reservation.getEndDate(), reservation.getRoomNumber(),
                         reservation.getGuestId());
-        BatchStatement batchInsertReservation = BatchStatement
-                    .builder(DefaultBatchType.LOGGED)
-                    .addStatement(bsInsertReservationByHotel)
-                    .addStatement(bsInsertReservationByConfirmation)
-                    .build();
-        cqlSession.execute(batchInsertReservation);
+
+             BatchStatement batchInsertReservation = BatchStatement
+                     .builder(DefaultBatchType.LOGGED)
+                     .addStatement(bsInsertReservationByHotel)
+                     .addStatement(bsInsertReservationByConfirmation)
+                     .build();
+             cqlSession.execute(batchInsertReservation);
+         }
         return reservation.getConfirmationNumber();
     }
 
@@ -462,6 +479,17 @@ public class ReservationRepository {
                     .value(END_DATE, bindMarker(END_DATE))
                     .value(ROOM_NUMBER, bindMarker(ROOM_NUMBER))
                     .value(GUEST_ID, bindMarker(GUEST_ID))
+                    .build());
+            // TODO: Create alternate PreparedStatement we can use to ensure uniqueness of the reservation
+            // Hint: similar to psInsertReservationByHotelDate, but with a condition added
+            psInsertReservationByHotelDateUnique = cqlSession.prepare(QueryBuilder.insertInto(keyspaceName, TABLE_RESERVATION_BY_HOTEL_DATE)
+                    .value(HOTEL_ID, bindMarker(HOTEL_ID))
+                    .value(START_DATE, bindMarker(START_DATE))
+                    .value(END_DATE, bindMarker(END_DATE))
+                    .value(ROOM_NUMBER, bindMarker(ROOM_NUMBER))
+                    .value(CONFIRMATION_NUMBER, bindMarker(CONFIRMATION_NUMBER))
+                    .value(GUEST_ID, bindMarker(GUEST_ID))
+                    .ifNotExists()
                     .build());
             logger.info("Statements have been successfully prepared.");
         }
