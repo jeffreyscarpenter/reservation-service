@@ -10,5 +10,5 @@
     <logger name="com.cassandraguide" level="INFO"/>
     <logger name="dev.cassandraguide.ReservationServiceApp" level="WARN" />
     <!-- TODO: Configure the DataStax Java Driver for debug log level -->
-    <logger name="com.datastax.oss.driver" level="DEBUG"/>
+    <logger name="com.datastax.oss.driver" level="ERROR"/>
 </configuration>
