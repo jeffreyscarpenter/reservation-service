@@ -110,6 +110,7 @@ public class CassandraConfiguration {
             tmpSession.execute(createKeyspace(keyspace()).ifNotExists().withSimpleStrategy(1).build());
             logger.debug("+ Keyspace '{}' has been created (if needed)", keyspace());
         }
+        // TODO: Review creation of the CqlSession used by the ReservationService
         return CqlSession.builder()
                 .addContactPoint(new InetSocketAddress(getCassandraHost(), getCassandraPort()))
                 .withKeyspace(keyspace())
