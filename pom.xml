@@ -51,6 +51,7 @@
 			<version>${swagger.version}</version>
 		</dependency>
 
+		<!-- TODO: Review driver dependencies -->
 		<!-- Cassandra Driver -->
 		<dependency>
 			<groupId>com.datastax.oss</groupId>
