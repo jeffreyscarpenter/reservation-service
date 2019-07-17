@@ -249,11 +249,7 @@ public class ReservationRepository {
                     psDeleteReservationByConfirmation.bind(confirmationNumber);
 
             // TODO: Create BatchStatement to delete from 'reservations_by_hotel_date' and 'reservations_by_confirmation'
-            BatchStatement batchDeleteReservation = BatchStatement
-                    .builder(DefaultBatchType.LOGGED)
-                    .addStatement(bsDeleteReservationByHotelDate)
-                    .addStatement(bsDeleteReservationByConfirmation)
-                    .build();
+            BatchStatement batchDeleteReservation = null; // WRITE ME
             cqlSession.execute(batchDeleteReservation);
             return true;
         }
