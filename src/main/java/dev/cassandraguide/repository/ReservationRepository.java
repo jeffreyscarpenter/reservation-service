@@ -219,7 +219,7 @@ public class ReservationRepository {
     public List<Reservation> findAll() {
         // TODO: Use the QueryBuilder operation selectFrom() to create a SimpleStatement
         // Hint: see the example usage below in prepareStatements()
-        SimpleStatement ssFindAll = selectFrom(keyspaceName, TABLE_RESERVATION_BY_CONFI).all().build();
+        SimpleStatement ssFindAll = null; // WRITE ME
 
         return cqlSession.execute(ssFindAll)
                   .all()                          // no paging we retrieve all objects
@@ -437,18 +437,11 @@ public class ReservationRepository {
 
             // TODO: Create PreparedStatement using the QueryBuilder on 'reservations_by_confirmation'
             // Hint: this is quite similar to creating psExistReservation above, only we're selecting all()
-            psFindReservation = cqlSession.prepare(
-                                selectFrom(keyspaceName, TABLE_RESERVATION_BY_CONFI).all()
-                                .where(column(CONFIRMATION_NUMBER).isEqualTo(bindMarker(CONFIRMATION_NUMBER)))
-                                .build());
+            psFindReservation = null; // WRITE ME
 
             // TODO: Create PreparedStatement using the QueryBuilder on 'reservations_by_hotel_date'
             // Hint: this is quite similar to creating psExistReservation above, only we're selecting all()
-            psSearchReservation = cqlSession.prepare(
-                                selectFrom(keyspaceName, TABLE_RESERVATION_BY_HOTEL_DATE).all()
-                                .where(column(HOTEL_ID).isEqualTo(bindMarker(HOTEL_ID)))
-                                .where(column(START_DATE).isEqualTo(bindMarker(START_DATE)))
-                                .build());
+            psSearchReservation = null; // WRITE ME
 
             // TODO: Review creation of PreparedStatement using the QueryBuilder to delete from 'reservations_by_confirmation'
             psDeleteReservationByConfirmation = cqlSession.prepare(
@@ -457,12 +450,7 @@ public class ReservationRepository {
                                 .build());
 
             // TODO: Create PreparedStatement using the QueryBuilder to delete from 'reservations_by_hotel_date'
-            psDeleteReservationByHotelDate = cqlSession.prepare(
-                    deleteFrom(keyspaceName, TABLE_RESERVATION_BY_HOTEL_DATE)
-                    .where(column(HOTEL_ID).isEqualTo(bindMarker(HOTEL_ID)))
-                    .where(column(START_DATE).isEqualTo(bindMarker(START_DATE)))
-                    .where(column(ROOM_NUMBER).isEqualTo(bindMarker(ROOM_NUMBER)))
-                    .build());
+            psDeleteReservationByHotelDate = null; // WRITE ME
 
             // TODO: Review creation of PreparedStatement using the QueryBuilder to insert into 'reservations_by_hotel_date'
             psInsertReservationByHotelDate = cqlSession.prepare(QueryBuilder.insertInto(keyspaceName, TABLE_RESERVATION_BY_HOTEL_DATE)
@@ -475,14 +463,7 @@ public class ReservationRepository {
                     .build());
 
             // TODO: Create PreparedStatement using the QueryBuilder to insert into 'reservations_by_confirmation'
-            psInsertReservationByConfirmation = cqlSession.prepare(QueryBuilder.insertInto(keyspaceName, TABLE_RESERVATION_BY_CONFI)
-                    .value(CONFIRMATION_NUMBER, bindMarker(CONFIRMATION_NUMBER))
-                    .value(HOTEL_ID, bindMarker(HOTEL_ID))
-                    .value(START_DATE, bindMarker(START_DATE))
-                    .value(END_DATE, bindMarker(END_DATE))
-                    .value(ROOM_NUMBER, bindMarker(ROOM_NUMBER))
-                    .value(GUEST_ID, bindMarker(GUEST_ID))
-                    .build());
+            psInsertReservationByConfirmation = null; // WRITE ME
             logger.info("Statements have been successfully prepared.");
         }
     }
