@@ -20,7 +20,7 @@ public interface ReservationDao {
     @Select
     ReservationsByConfirmation findByConfirmationNumber(String confirmationNumber);
 
-    @Select
+    @Select (customWhereClause = "hotel_id = :hotelId AND start_date = :date")
     PagingIterable<ReservationsByHotelDate> findByHotelDate(String hotelId, LocalDate date);
 
     @Query("SELECT * FROM ${tableId}")
