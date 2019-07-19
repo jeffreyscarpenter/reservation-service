@@ -15,12 +15,9 @@
  */
 package dev.cassandraguide.repository;
 
-import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.bindMarker;
-import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.deleteFrom;
-import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.selectFrom;
+
 import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.createTable;
 import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.createType;
-import static com.datastax.oss.driver.api.querybuilder.relation.Relation.column;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -41,16 +38,10 @@ import org.springframework.stereotype.Repository;
 
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.cql.BatchStatement;
-import com.datastax.oss.driver.api.core.cql.BoundStatement;
-import com.datastax.oss.driver.api.core.cql.DefaultBatchType;
-import com.datastax.oss.driver.api.core.cql.PreparedStatement;
-import com.datastax.oss.driver.api.core.cql.ResultSet;
-import com.datastax.oss.driver.api.core.cql.Row;
+
 import com.datastax.oss.driver.api.core.metadata.schema.ClusteringOrder;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.core.type.UserDefinedType;
-import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 
 /**
  * The goal of this project is to provide a minimally functional implementation of a microservice 
@@ -91,19 +82,16 @@ public class ReservationRepository {
     public static final CqlIdentifier EMAILS                     = CqlIdentifier.fromCql("emails");
     public static final CqlIdentifier PHONE_NUMBERS              = CqlIdentifier.fromCql("phone_numbers");
     public static final CqlIdentifier ADDRESSES                  = CqlIdentifier.fromCql("addresses");
-    
-    private PreparedStatement psExistReservation;
-    private PreparedStatement psFindReservation;
-    private PreparedStatement psInsertReservationByHotelDate;
-    private PreparedStatement psInsertReservationByConfirmation;
-    private PreparedStatement psDeleteReservationByHotelDate;
-    private PreparedStatement psDeleteReservationByConfirmation;
-    private PreparedStatement psSearchReservation;
+
     
     /** CqlSession holding metadata to interact with Cassandra. */
     private CqlSession     cqlSession;
     private CqlIdentifier  keyspaceName;
-    
+
+    // TODO:
+    /** Data Access Object for reservation data */
+    private ReservationDao reservationDao;
+
     /** External Initialization. */
     public ReservationRepository(
             @NonNull CqlSession cqlSession, 
@@ -116,6 +104,10 @@ public class ReservationRepository {
         
         // Prepare Statements of reservation
         prepareStatements();
+
+        // TODO: create mapper / DAO
+        reservationDao = new ReservationMapperBuilder(cqlSession).build().reservationDao();
+
         logger.info("Application initialized.");
     }
     
@@ -141,8 +133,8 @@ public class ReservationRepository {
      *      true if the reservation exists, false if it does not
      */
     public boolean exists(String confirmationNumber) {
-        return cqlSession.execute(psExistReservation.bind(confirmationNumber))
-                         .getAvailableWithoutFetching() > 0;
+        // TODO
+        return findByConfirmationNumber(confirmationNumber).isPresent();
     }
     
     /**
@@ -156,12 +148,13 @@ public class ReservationRepository {
     @NonNull
     public Optional<Reservation> findByConfirmationNumber(@NonNull String confirmationNumber) {
         
-        ResultSet resultSet = cqlSession.execute(psFindReservation.bind(confirmationNumber));
+        // TODO:
+        ReservationsByConfirmation reservationsByConfirmation =
+                reservationDao.findByConfirmationNumber(confirmationNumber);
         
         // Hint: an empty result might not be an error as this method is sometimes used to check whether a
         // reservation with this confirmation number exists
-        Row row = resultSet.one();
-        if (row == null) {
+        if (reservationsByConfirmation == null) {
             logger.debug("Unable to load reservation with confirmation number: " + confirmationNumber);
             return Optional.empty();
         }
@@ -169,7 +162,7 @@ public class ReservationRepository {
         // Hint: If there is a result, create a new reservation object and set the values
         // Bonus: factor the logic to extract a reservation from a row into a separate method
         // (you will reuse it again later in getAllReservations())
-        return Optional.of(mapRowToReservation(row));
+        return Optional.of(mapReservationByConfirmationToReservation(reservationsByConfirmation));
     }
     
     /**
@@ -187,22 +180,13 @@ public class ReservationRepository {
             // Generating a new reservation number if none has been provided
             reservation.setConfirmationNumber(UUID.randomUUID().toString());
         }
+        // TODO:
         // Insert into 'reservations_by_hotel_date'
-        BoundStatement bsInsertReservationByHotel = 
-                psInsertReservationByHotelDate.bind(reservation.getHotelId(), reservation.getStartDate(),
-                        reservation.getEndDate(), reservation.getRoomNumber(), reservation.getConfirmationNumber(),
-                        reservation.getGuestId());
-        // Insert into 'reservations_by_confirmationumber'
-        BoundStatement bsInsertReservationByConfirmation = 
-                psInsertReservationByConfirmation.bind(reservation.getConfirmationNumber(), reservation.getHotelId(),
-                        reservation.getStartDate(), reservation.getEndDate(), reservation.getRoomNumber(),
-                        reservation.getGuestId());
-        BatchStatement batchInsertReservation = BatchStatement
-                    .builder(DefaultBatchType.LOGGED)
-                    .addStatement(bsInsertReservationByHotel)
-                    .addStatement(bsInsertReservationByConfirmation)
-                    .build();
-        cqlSession.execute(batchInsertReservation);
+         reservationDao.save(new ReservationsByHotelDate(reservation));
+
+        // Insert into 'reservations_by_confirmation'
+         reservationDao.save(new ReservationsByConfirmation(reservation));
+
         return reservation.getConfirmationNumber();
     }
 
@@ -214,10 +198,11 @@ public class ReservationRepository {
      *      list containing all reservations
      */
     public List<Reservation> findAll() {
-        return cqlSession.execute(selectFrom(keyspaceName, TABLE_RESERVATION_BY_CONFI).all().build())
+        // TODO:
+        return reservationDao.findAll()
                   .all()                          // no paging we retrieve all objects
                   .stream()                       // because we are good people
-                  .map(this::mapRowToReservation) // Mapping row as Reservation
+                  .map(this::mapReservationByConfirmationToReservation) // Mapping row as Reservation
                   .collect(Collectors.toList());  // Back to list objects
     }
       
@@ -235,22 +220,13 @@ public class ReservationRepository {
 
         if (reservationToDelete.isPresent()) {
 
+            // TODO:
             // Delete from 'reservations_by_hotel_date'
-            Reservation reservation = reservationToDelete.get();
-            BoundStatement bsDeleteReservationByHotelDate =
-                    psDeleteReservationByHotelDate.bind(reservation.getHotelId(),
-                            reservation.getStartDate(), reservation.getRoomNumber());
+            reservationDao.delete(new ReservationsByHotelDate(reservationToDelete.get()));
 
             // Delete from 'reservations_by_confirmation'
-            BoundStatement bsDeleteReservationByConfirmation =
-                    psDeleteReservationByConfirmation.bind(confirmationNumber);
+            reservationDao.delete(new ReservationsByConfirmation(reservationToDelete.get()));
 
-            BatchStatement batchDeleteReservation = BatchStatement
-                    .builder(DefaultBatchType.LOGGED)
-                    .addStatement(bsDeleteReservationByHotelDate)
-                    .addStatement(bsDeleteReservationByConfirmation)
-                    .build();
-            cqlSession.execute(batchDeleteReservation);
             return true;
         }
         return false;
@@ -269,32 +245,51 @@ public class ReservationRepository {
     public List<Reservation> findByHotelAndDate(String hotelId, LocalDate date) {
         Objects.requireNonNull(hotelId);
         Objects.requireNonNull(date);
-        return cqlSession.execute(psSearchReservation.bind(hotelId, date))
+        return reservationDao.findByHotelDate(hotelId, date)
                          .all()                          // no paging we retrieve all objects
                          .stream()                       // because we are good people
-                         .map(this::mapRowToReservation) // Mapping row as Reservation
+                         .map(this::mapReservationByHotelDateToReservation) // Mapping row as Reservation
                          .collect(Collectors.toList());  // Back to list objects
     }
 
     /**
      * Utility method to marshal a row as expected Reservation Bean.
      *
-     * @param row
-     *      current row from ResultSet
+     * @param reservationsByConfirmation
+     *      entity class returned from mapper
      * @return
-     *      object
+     *      reservation object
      */
-    private Reservation mapRowToReservation(Row row) {
+    private Reservation mapReservationByConfirmationToReservation(ReservationsByConfirmation reservationsByConfirmation) {
         Reservation reservation = new Reservation();
-        reservation.setHotelId(row.getString(HOTEL_ID));
-        reservation.setConfirmationNumber(row.getString(CONFIRMATION_NUMBER));
-        reservation.setGuestId(row.getUuid(GUEST_ID));
-        reservation.setRoomNumber(row.getShort(ROOM_NUMBER));
-        reservation.setStartDate(row.getLocalDate(START_DATE));
-        reservation.setEndDate(row.getLocalDate(END_DATE));
+        reservation.setHotelId(reservationsByConfirmation.getHotelId());
+        reservation.setConfirmationNumber(reservationsByConfirmation.getConfirmationNumber());
+        reservation.setGuestId(reservationsByConfirmation.getGuestId());
+        reservation.setRoomNumber(reservationsByConfirmation.getRoomNumber());
+        reservation.setStartDate(reservationsByConfirmation.getStartDate());
+        reservation.setEndDate(reservationsByConfirmation.getEndDate());
         return reservation;
     }
-    
+
+    /**
+     * Utility method to marshal a row as expected Reservation Bean.
+     *
+     * @param reservationsByHotelDate
+     *      entity class returned from mapper
+     * @return
+     *      reservation object
+     */
+    private Reservation mapReservationByHotelDateToReservation(ReservationsByHotelDate reservationsByHotelDate) {
+        Reservation reservation = new Reservation();
+        reservation.setHotelId(reservationsByHotelDate.getHotelId());
+        reservation.setConfirmationNumber(reservationsByHotelDate.getConfirmationNumber());
+        reservation.setGuestId(reservationsByHotelDate.getGuestId());
+        reservation.setRoomNumber(reservationsByHotelDate.getRoomNumber());
+        reservation.setStartDate(reservationsByHotelDate.getStartDate());
+        reservation.setEndDate(reservationsByHotelDate.getEndDate());
+        return reservation;
+    }
+
     /**
      * Create Keyspace and relevant tables as per defined in 'reservation.cql'
      */
@@ -421,49 +416,5 @@ public class ReservationRepository {
                   .build());
            logger.debug("+ Table '{}' has been created (if needed)", TABLE_GUESTS.asInternal());
            logger.info("Schema has been successfully initialized.");
-    }
-
-    private void prepareStatements() {
-        if (psExistReservation == null) {
-            psExistReservation = cqlSession.prepare(selectFrom(keyspaceName, TABLE_RESERVATION_BY_CONFI).column(CONFIRMATION_NUMBER)
-                                .where(column(CONFIRMATION_NUMBER).isEqualTo(bindMarker(CONFIRMATION_NUMBER)))
-                                .build());
-            psFindReservation = cqlSession.prepare(
-                                selectFrom(keyspaceName, TABLE_RESERVATION_BY_CONFI).all()
-                                .where(column(CONFIRMATION_NUMBER).isEqualTo(bindMarker(CONFIRMATION_NUMBER)))
-                                .build());
-            psSearchReservation = cqlSession.prepare(
-                                selectFrom(keyspaceName, TABLE_RESERVATION_BY_HOTEL_DATE).all()
-                                .where(column(HOTEL_ID).isEqualTo(bindMarker(HOTEL_ID)))
-                                .where(column(START_DATE).isEqualTo(bindMarker(START_DATE)))
-                                .build());
-            psDeleteReservationByConfirmation = cqlSession.prepare(
-                                deleteFrom(keyspaceName, TABLE_RESERVATION_BY_CONFI)
-                                .where(column(CONFIRMATION_NUMBER).isEqualTo(bindMarker(CONFIRMATION_NUMBER)))
-                                .build());
-            psDeleteReservationByHotelDate = cqlSession.prepare(
-                    deleteFrom(keyspaceName, TABLE_RESERVATION_BY_HOTEL_DATE)
-                    .where(column(HOTEL_ID).isEqualTo(bindMarker(HOTEL_ID)))
-                    .where(column(START_DATE).isEqualTo(bindMarker(START_DATE)))
-                    .where(column(ROOM_NUMBER).isEqualTo(bindMarker(ROOM_NUMBER)))
-                    .build());
-            psInsertReservationByHotelDate = cqlSession.prepare(QueryBuilder.insertInto(keyspaceName, TABLE_RESERVATION_BY_HOTEL_DATE)
-                    .value(HOTEL_ID, bindMarker(HOTEL_ID))
-                    .value(START_DATE, bindMarker(START_DATE))
-                    .value(END_DATE, bindMarker(END_DATE))
-                    .value(ROOM_NUMBER, bindMarker(ROOM_NUMBER))
-                    .value(CONFIRMATION_NUMBER, bindMarker(CONFIRMATION_NUMBER))
-                    .value(GUEST_ID, bindMarker(GUEST_ID))
-                    .build());
-            psInsertReservationByConfirmation = cqlSession.prepare(QueryBuilder.insertInto(keyspaceName, TABLE_RESERVATION_BY_CONFI)
-                    .value(CONFIRMATION_NUMBER, bindMarker(CONFIRMATION_NUMBER))
-                    .value(HOTEL_ID, bindMarker(HOTEL_ID))
-                    .value(START_DATE, bindMarker(START_DATE))
-                    .value(END_DATE, bindMarker(END_DATE))
-                    .value(ROOM_NUMBER, bindMarker(ROOM_NUMBER))
-                    .value(GUEST_ID, bindMarker(GUEST_ID))
-                    .build());
-            logger.info("Statements have been successfully prepared.");
-        }
     }
 }

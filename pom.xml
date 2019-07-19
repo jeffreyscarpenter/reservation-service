@@ -62,6 +62,12 @@
 			<artifactId>java-driver-query-builder</artifactId>
 			<version>${oss-java-driver.version}</version>
 		</dependency>
+		<!-- TODO: Note new dependency for mapper library -->
+		<dependency>
+			<groupId>com.datastax.oss</groupId>
+			<artifactId>java-driver-mapper-processor</artifactId>
+			<version>${oss-java-driver.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.apache.commons</groupId>
