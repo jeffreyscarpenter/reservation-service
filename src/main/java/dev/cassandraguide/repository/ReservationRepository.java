@@ -193,7 +193,7 @@ public class ReservationRepository {
                 psInsertReservationByHotelDate.bind(reservation.getHotelId(), reservation.getStartDate(),
                         reservation.getEndDate(), reservation.getRoomNumber(), reservation.getConfirmationNumber(),
                         reservation.getGuestId());
-        // Insert into 'reservations_by_confirmationumber'
+        // Insert into 'reservations_by_confirmation'
         BoundStatement bsInsertReservationByConfirmation = 
                 psInsertReservationByConfirmation.bind(reservation.getConfirmationNumber(), reservation.getHotelId(),
                         reservation.getStartDate(), reservation.getEndDate(), reservation.getRoomNumber(),
