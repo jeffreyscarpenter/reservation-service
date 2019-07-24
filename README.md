@@ -31,7 +31,7 @@ You'll need a Cassandra cluster consisting of least one node. Here are two quick
     - Easiest: use Docker Compose: `docker-compose up -d`
     - Alternatively: 
         - Obtain from [DockerHub][docker-hub]: `docker pull cassandra`
-        - Start Cassandra: `docker run cassandra -p 9042:9042`
+        - Start Cassandra: `docker run -p 9042:9042 cassandra `
 
 To run the Reservation Service, you'll need to do the following:
 
