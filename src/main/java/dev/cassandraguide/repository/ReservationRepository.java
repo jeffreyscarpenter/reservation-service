@@ -101,9 +101,6 @@ public class ReservationRepository {
         
         // Will create tables (if they do not exist)
         createReservationTables();
-        
-        // Prepare Statements of reservation
-        prepareStatements();
 
         // TODO: create mapper / DAO
         reservationDao = new ReservationMapperBuilder(cqlSession).build().reservationDao();

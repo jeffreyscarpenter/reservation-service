@@ -16,7 +16,6 @@
 package dev.cassandraguide.repository;
 
 import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
-import com.datastax.oss.driver.api.mapper.annotations.CqlName;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
 import com.datastax.oss.driver.api.mapper.annotations.NamingStrategy;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
@@ -49,7 +48,8 @@ public class ReservationsByHotelDate {
 
     /** Room number. */
     @ClusteringColumn(2)
-    private short roomNumber;
+    // TODO: remove workaround for https://datastax-oss.atlassian.net/browse/JAVA-2324 when upgrading to 4.2 driver
+    private Short roomNumber;
 
     /** UUID. */
     private UUID guestId;
@@ -138,7 +138,7 @@ public class ReservationsByHotelDate {
      * @return
      *       current value of 'roomNumber'
      */
-    public short getRoomNumber() {
+    public Short getRoomNumber() {
         return roomNumber;
     }
 
@@ -147,7 +147,7 @@ public class ReservationsByHotelDate {
      * @param roomNumber
      *      new value for 'roomNumber '
      */
-    public void setRoomNumber(short roomNumber) {
+    public void setRoomNumber(Short roomNumber) {
         this.roomNumber = roomNumber;
     }
 

@@ -15,7 +15,6 @@
  */
 package dev.cassandraguide.repository;
 
-import com.datastax.oss.driver.api.mapper.annotations.CqlName;
 import dev.cassandraguide.model.Reservation;
 
 import java.time.LocalDate;
@@ -45,7 +44,8 @@ public class ReservationsByConfirmation {
     private LocalDate endDate;
 
     /** Room number. */
-    private short roomNumber;
+    // TODO: remove workaround for https://datastax-oss.atlassian.net/browse/JAVA-2324 when upgrading to 4.2 driver
+    private Short roomNumber;
 
     /** UUID. */
     private UUID guestId;
@@ -135,7 +135,7 @@ public class ReservationsByConfirmation {
      * @return
      *       current value of 'roomNumber'
      */
-    public short getRoomNumber() {
+    public Short getRoomNumber() {
         return roomNumber;
     }
 
@@ -144,7 +144,7 @@ public class ReservationsByConfirmation {
      * @param roomNumber
      *      new value for 'roomNumber '
      */
-    public void setRoomNumber(short roomNumber) {
+    public void setRoomNumber(Short roomNumber) {
         this.roomNumber = roomNumber;
     }
 

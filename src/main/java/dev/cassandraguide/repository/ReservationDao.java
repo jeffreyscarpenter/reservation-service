@@ -1,11 +1,7 @@
 package dev.cassandraguide.repository;
 
 import com.datastax.oss.driver.api.core.PagingIterable;
-import com.datastax.oss.driver.api.mapper.annotations.Dao;
-import com.datastax.oss.driver.api.mapper.annotations.Delete;
-import com.datastax.oss.driver.api.mapper.annotations.Insert;
-import com.datastax.oss.driver.api.mapper.annotations.Select;
-import com.datastax.oss.driver.api.mapper.annotations.Query;
+import com.datastax.oss.driver.api.mapper.annotations.*;
 
 import java.time.LocalDate;
 
