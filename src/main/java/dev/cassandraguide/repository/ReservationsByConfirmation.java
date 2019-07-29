@@ -23,7 +23,7 @@ import java.util.UUID;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
 import com.datastax.oss.driver.api.mapper.annotations.NamingStrategy;
-import static com.datastax.oss.driver.api.mapper.entity.naming.NamingConvention.LOWER_CAMEL_CASE;
+import static com.datastax.oss.driver.api.mapper.entity.naming.NamingConvention.SNAKE_CASE_INSENSITIVE;
 
 /**
  * Entity for mapping to the `reservations_by_confirmation' table.
@@ -31,7 +31,7 @@ import static com.datastax.oss.driver.api.mapper.entity.naming.NamingConvention.
  * @author Jeff Carpenter
  */
 @Entity
-@NamingStrategy(convention = LOWER_CAMEL_CASE)
+@NamingStrategy(convention = SNAKE_CASE_INSENSITIVE)
 public class ReservationsByConfirmation {
 
     /** Hotel identifier, as Text not UUID (for simplicity). */
@@ -44,7 +44,8 @@ public class ReservationsByConfirmation {
     private LocalDate endDate;
 
     /** Room number. */
-    // TODO: remove workaround for https://datastax-oss.atlassian.net/browse/JAVA-2324 when upgrading to 4.2 driver
+    // TODO: convert to primitive 'short' when upgrading to 4.2 driver
+    // workaround for https://datastax-oss.atlassian.net/browse/JAVA-2324
     private Short roomNumber;
 
     /** UUID. */

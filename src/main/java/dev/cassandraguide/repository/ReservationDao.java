@@ -17,7 +17,9 @@ public interface ReservationDao {
     ReservationsByConfirmation findByConfirmationNumber(String confirmationNumber);
 
     @Select (customWhereClause = "hotel_id = :hotelId AND start_date = :date")
-    PagingIterable<ReservationsByHotelDate> findByHotelDate(String hotelId, LocalDate date);
+    PagingIterable<ReservationsByHotelDate> findByHotelDate(
+            @CqlName("hotel_id") String hotelId,
+            @CqlName("start_date") LocalDate date);
 
     @Query("SELECT * FROM ${tableId}")
     PagingIterable<ReservationsByConfirmation> findAll();

@@ -24,7 +24,7 @@ import dev.cassandraguide.model.Reservation;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import static com.datastax.oss.driver.api.mapper.entity.naming.NamingConvention.LOWER_CAMEL_CASE;
+import static com.datastax.oss.driver.api.mapper.entity.naming.NamingConvention.SNAKE_CASE_INSENSITIVE;
 
 /**
  * Entity for mapping to the `reservations_by_confirmation' table.
@@ -32,7 +32,7 @@ import static com.datastax.oss.driver.api.mapper.entity.naming.NamingConvention.
  * @author Jeff Carpenter
  */
 @Entity
-@NamingStrategy(convention = LOWER_CAMEL_CASE)
+@NamingStrategy(convention = SNAKE_CASE_INSENSITIVE)
 public class ReservationsByHotelDate {
 
     /** Hotel identifier, as Text not UUID (for simplicity). */
@@ -48,7 +48,8 @@ public class ReservationsByHotelDate {
 
     /** Room number. */
     @ClusteringColumn(2)
-    // TODO: remove workaround for https://datastax-oss.atlassian.net/browse/JAVA-2324 when upgrading to 4.2 driver
+    // TODO: convert to primitive 'short' when upgrading to 4.2 driver
+    // workaround for https://datastax-oss.atlassian.net/browse/JAVA-2324
     private Short roomNumber;
 
     /** UUID. */
