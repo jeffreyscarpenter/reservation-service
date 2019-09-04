@@ -30,6 +30,7 @@ import static com.datastax.oss.driver.api.mapper.entity.naming.NamingConvention.
  *
  * @author Jeff Carpenter
  */
+// TODO: review entity class
 @Entity
 @NamingStrategy(convention = SNAKE_CASE_INSENSITIVE)
 public class ReservationsByConfirmation {
@@ -44,9 +45,7 @@ public class ReservationsByConfirmation {
     private LocalDate endDate;
 
     /** Room number. */
-    // TODO: convert to primitive 'short' when upgrading to 4.2 driver
-    // workaround for https://datastax-oss.atlassian.net/browse/JAVA-2324
-    private Short roomNumber;
+    private short roomNumber;
 
     /** UUID. */
     private UUID guestId;
@@ -136,7 +135,7 @@ public class ReservationsByConfirmation {
      * @return
      *       current value of 'roomNumber'
      */
-    public Short getRoomNumber() {
+    public short getRoomNumber() {
         return roomNumber;
     }
 
@@ -145,7 +144,7 @@ public class ReservationsByConfirmation {
      * @param roomNumber
      *      new value for 'roomNumber '
      */
-    public void setRoomNumber(Short roomNumber) {
+    public void setRoomNumber(short roomNumber) {
         this.roomNumber = roomNumber;
     }
 

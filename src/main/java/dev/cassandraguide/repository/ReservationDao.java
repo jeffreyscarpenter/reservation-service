@@ -10,6 +10,7 @@ import java.time.LocalDate;
  *
  * @author Jeff Carpenter
  */
+// TODO: review DAO interface
 @Dao
 public interface ReservationDao {
 

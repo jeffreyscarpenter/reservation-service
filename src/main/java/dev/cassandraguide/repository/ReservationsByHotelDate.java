@@ -31,6 +31,7 @@ import static com.datastax.oss.driver.api.mapper.entity.naming.NamingConvention.
  *
  * @author Jeff Carpenter
  */
+// TODO: review entity class
 @Entity
 @NamingStrategy(convention = SNAKE_CASE_INSENSITIVE)
 public class ReservationsByHotelDate {

@@ -9,6 +9,7 @@ import com.datastax.oss.driver.api.mapper.annotations.Mapper;
  *
  * @author Jeff Carpenter
  */
+// TODO: review Maper interface
 @Mapper
 public interface ReservationMapper {
 

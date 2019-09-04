@@ -88,7 +88,7 @@ public class ReservationRepository {
     private CqlSession     cqlSession;
     private CqlIdentifier  keyspaceName;
 
-    // TODO:
+    // TODO: note variable to store Reservation DAO
     /** Data Access Object for reservation data */
     private ReservationDao reservationDao;
 
@@ -130,7 +130,7 @@ public class ReservationRepository {
      *      true if the reservation exists, false if it does not
      */
     public boolean exists(String confirmationNumber) {
-        // TODO
+        // TODO: note shortcut to implement using other operation
         return findByConfirmationNumber(confirmationNumber).isPresent();
     }
     
@@ -145,7 +145,7 @@ public class ReservationRepository {
     @NonNull
     public Optional<Reservation> findByConfirmationNumber(@NonNull String confirmationNumber) {
         
-        // TODO:
+        // TODO: use DAO to find the reservation
         ReservationsByConfirmation reservationsByConfirmation =
                 reservationDao.findByConfirmationNumber(confirmationNumber);
         
@@ -177,7 +177,7 @@ public class ReservationRepository {
             // Generating a new reservation number if none has been provided
             reservation.setConfirmationNumber(UUID.randomUUID().toString());
         }
-        // TODO:
+        // TODO: use DAO to save the reservation
         // Insert into 'reservations_by_hotel_date'
          reservationDao.save(new ReservationsByHotelDate(reservation));
 
@@ -195,7 +195,7 @@ public class ReservationRepository {
      *      list containing all reservations
      */
     public List<Reservation> findAll() {
-        // TODO:
+        // TODO: review usage of DAO to load all reservations
         return reservationDao.findAll()
                   .all()                          // no paging we retrieve all objects
                   .stream()                       // because we are good people
@@ -217,7 +217,7 @@ public class ReservationRepository {
 
         if (reservationToDelete.isPresent()) {
 
-            // TODO:
+            // TODO: Use the DAO to delete the reservation
             // Delete from 'reservations_by_hotel_date'
             reservationDao.delete(new ReservationsByHotelDate(reservationToDelete.get()));
 
@@ -242,6 +242,8 @@ public class ReservationRepository {
     public List<Reservation> findByHotelAndDate(String hotelId, LocalDate date) {
         Objects.requireNonNull(hotelId);
         Objects.requireNonNull(date);
+
+        // TODO: review usage of DAO to find reservations
         return reservationDao.findByHotelDate(hotelId, date)
                          .all()                          // no paging we retrieve all objects
                          .stream()                       // because we are good people
