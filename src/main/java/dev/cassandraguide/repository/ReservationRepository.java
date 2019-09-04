@@ -146,8 +146,7 @@ public class ReservationRepository {
     public Optional<Reservation> findByConfirmationNumber(@NonNull String confirmationNumber) {
         
         // TODO: use DAO to find the reservation
-        ReservationsByConfirmation reservationsByConfirmation =
-                reservationDao.findByConfirmationNumber(confirmationNumber);
+        ReservationsByConfirmation reservationsByConfirmation = null; // WRITE ME
         
         // Hint: an empty result might not be an error as this method is sometimes used to check whether a
         // reservation with this confirmation number exists
@@ -179,10 +178,8 @@ public class ReservationRepository {
         }
         // TODO: use DAO to save the reservation
         // Insert into 'reservations_by_hotel_date'
-         reservationDao.save(new ReservationsByHotelDate(reservation));
 
         // Insert into 'reservations_by_confirmation'
-         reservationDao.save(new ReservationsByConfirmation(reservation));
 
         return reservation.getConfirmationNumber();
     }
@@ -219,10 +216,8 @@ public class ReservationRepository {
 
             // TODO: Use the DAO to delete the reservation
             // Delete from 'reservations_by_hotel_date'
-            reservationDao.delete(new ReservationsByHotelDate(reservationToDelete.get()));
 
             // Delete from 'reservations_by_confirmation'
-            reservationDao.delete(new ReservationsByConfirmation(reservationToDelete.get()));
 
             return true;
         }
