@@ -48,9 +48,7 @@ public class ReservationsByHotelDate {
 
     /** Room number. */
     @ClusteringColumn(2)
-    // TODO: convert to primitive 'short' when upgrading to 4.2 driver
-    // workaround for https://datastax-oss.atlassian.net/browse/JAVA-2324
-    private Short roomNumber;
+    private short roomNumber;
 
     /** UUID. */
     private UUID guestId;
@@ -139,7 +137,7 @@ public class ReservationsByHotelDate {
      * @return
      *       current value of 'roomNumber'
      */
-    public Short getRoomNumber() {
+    public short getRoomNumber() {
         return roomNumber;
     }
 
@@ -148,7 +146,7 @@ public class ReservationsByHotelDate {
      * @param roomNumber
      *      new value for 'roomNumber '
      */
-    public void setRoomNumber(Short roomNumber) {
+    public void setRoomNumber(short roomNumber) {
         this.roomNumber = roomNumber;
     }
 
