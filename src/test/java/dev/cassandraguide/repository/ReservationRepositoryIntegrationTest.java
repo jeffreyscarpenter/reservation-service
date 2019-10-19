@@ -45,9 +45,9 @@ public class ReservationRepositoryIntegrationTest {
     public static void _initReservationRepository() {
         // Mapping from Container to repository
         cassandraConfig = new CassandraConfiguration();
-        cassandraConfig.setDropSchema(true);
-        cassandraConfig.setCassandraHost(cassandraContainer.getContainerIpAddress());
-        cassandraConfig.setCassandraPort(cassandraContainer.getMappedPort(9042));
+        //cassandraConfig.setDropSchema(true);
+        //cassandraConfig.setCassandraUsername(cassandraContainer.getContainerIpAddress());
+        //cassandraConfig.setCassandraPassword(cassandraContainer.getMappedPort(9042));
         reservationRepo = new ReservationRepository(cassandraConfig.cqlSession(), cassandraConfig.keyspace());
     }
     

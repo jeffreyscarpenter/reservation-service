@@ -342,7 +342,7 @@ public class ReservationRepository {
                         .withColumn(CONFIRMATION_NUMBER, DataTypes.TEXT)
                         .withColumn(GUEST_ID, DataTypes.UUID)
                         .withClusteringOrder(ROOM_NUMBER, ClusteringOrder.ASC)
-                        .withComment("Q7. Find reservations by hotel and date")
+                        //.withComment("Q7. Find reservations by hotel and date")
                         .build());
         logger.debug("+ Table '{}' has been created (if needed)", TABLE_RESERVATION_BY_HOTEL_DATE.asInternal());
         
@@ -388,7 +388,7 @@ public class ReservationRepository {
                  .withColumn(ROOM_NUMBER, DataTypes.SMALLINT)
                  .withColumn(CONFIRMATION_NUMBER, DataTypes.TEXT)
                  .withColumn(GUEST_ID, DataTypes.UUID)
-                 .withComment("Q8. Find reservations by guest name")
+                 //.withComment("Q8. Find reservations by guest name")
                  .build());
           logger.debug("+ Table '{}' has been created (if needed)", TABLE_RESERVATION_BY_GUEST.asInternal());
           
@@ -417,7 +417,7 @@ public class ReservationRepository {
                   .withColumn(PHONE_NUMBERS, DataTypes.listOf(DataTypes.TEXT))
                   .withColumn(ADDRESSES, DataTypes.mapOf(DataTypes.TEXT, udtAddressType, true))
                   .withColumn(CONFIRMATION_NUMBER, DataTypes.TEXT)
-                  .withComment("Q9. Find guest by ID")
+                  //.withComment("Q9. Find guest by ID")
                   .build());
            logger.debug("+ Table '{}' has been created (if needed)", TABLE_GUESTS.asInternal());
            logger.info("Schema has been successfully initialized.");

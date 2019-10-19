@@ -14,9 +14,6 @@ server:
 # DataStax Enterprise Java Driver Config
 # ----------------------------------------------------------
 cassandra:
-  contactPoint: 127.0.0.1
-  port: 9042
   keyspaceName: reservation
-  localDataCenterName: datacenter1
   dropSchema: false
   

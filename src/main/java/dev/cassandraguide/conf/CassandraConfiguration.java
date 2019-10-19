@@ -18,8 +18,6 @@ package dev.cassandraguide.conf;
 import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.createKeyspace;
 import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.dropKeyspace;
 
-import java.net.InetSocketAddress;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,19 +38,7 @@ public class CassandraConfiguration {
     
     // Logger
     private static final Logger logger = LoggerFactory.getLogger(ReservationRepository.class);
-    
-    // Contact point hostname, single host
-    @Value("${cassandra.contactPoint:127.0.0.1}")
-    protected String cassandraHost;
-    
-    // Contact point port
-    @Value("${cassandra.port:9042}")
-    protected int cassandraPort;
-    
-    // DataCenter name, required from v2.
-    @Value("${cassandra.localDataCenterName:datacenter1}")
-    protected String localDataCenterName = "datacenter1";
-    
+
     // Keyspace Name
     @Value("${cassandra.keyspaceName:reservation}")
     public String keyspaceName = "reservation";
@@ -69,21 +55,14 @@ public class CassandraConfiguration {
     /**
      * Initialization of Configuration.
      *
-     * @param cassandraHost
-     * @param cassandraPort
-     * @param localDataCenterName
      * @param keyspaceName
      * @param dropSchema
      */
     public CassandraConfiguration(
-            String cassandraHost, int cassandraPort, String localDataCenterName, 
-            String keyspaceName,  boolean dropSchema) {
+            String keyspaceName, boolean dropSchema) {
         super();
-        this.cassandraHost       = cassandraHost;
-        this.cassandraPort       = cassandraPort;
         this.keyspaceName        = keyspaceName;
         this.dropSchema          = dropSchema;
-        this.localDataCenterName = localDataCenterName;
     }
     
     /**
@@ -98,80 +77,11 @@ public class CassandraConfiguration {
     
     @Bean
     public CqlSession cqlSession() {
-        logger.info("Creating Keyspace and expected table in Cassandra if not present.");
-        try(CqlSession tmpSession = CqlSession.builder()
-                               .addContactPoint(new InetSocketAddress(getCassandraHost(), getCassandraPort()))
-                               .withLocalDatacenter(getLocalDataCenterName())
-                               .build()) {
-            if (isDropSchema()) {
-                tmpSession.execute(dropKeyspace(keyspace()).ifExists().build());
-                logger.debug("+ Keyspace '{}' has been dropped (if existed)", keyspace());
-            }
-            tmpSession.execute(createKeyspace(keyspace()).ifNotExists().withSimpleStrategy(1).build());
-            logger.debug("+ Keyspace '{}' has been created (if needed)", keyspace());
-        }
         return CqlSession.builder()
-                .addContactPoint(new InetSocketAddress(getCassandraHost(), getCassandraPort()))
+                //.addContactPoint(new InetSocketAddress(getCassandraUsername(), getCassandraPassword()))
                 .withKeyspace(keyspace())
-                .withLocalDatacenter(getLocalDataCenterName())
+                //.withLocalDatacenter(getLocalDataCenterName())
                 .build();
-    }
-
-    /**
-     * Getter accessor for attribute 'cassandraHost'.
-     *
-     * @return
-     *       current value of 'cassandraHost'
-     */
-    public String getCassandraHost() {
-        return cassandraHost;
-    }
-
-    /**
-     * Setter accessor for attribute 'cassandraHost'.
-     * @param cassandraHost
-     * 		new value for 'cassandraHost '
-     */
-    public void setCassandraHost(String cassandraHost) {
-        this.cassandraHost = cassandraHost;
-    }
-
-    /**
-     * Getter accessor for attribute 'cassandraPort'.
-     *
-     * @return
-     *       current value of 'cassandraPort'
-     */
-    public int getCassandraPort() {
-        return cassandraPort;
-    }
-
-    /**
-     * Setter accessor for attribute 'cassandraPort'.
-     * @param cassandraPort
-     * 		new value for 'cassandraPort '
-     */
-    public void setCassandraPort(int cassandraPort) {
-        this.cassandraPort = cassandraPort;
-    }
-
-    /**
-     * Getter accessor for attribute 'localDataCenterName'.
-     *
-     * @return
-     *       current value of 'localDataCenterName'
-     */
-    public String getLocalDataCenterName() {
-        return localDataCenterName;
-    }
-
-    /**
-     * Setter accessor for attribute 'localDataCenterName'.
-     * @param localDataCenterName
-     * 		new value for 'localDataCenterName '
-     */
-    public void setLocalDataCenterName(String localDataCenterName) {
-        this.localDataCenterName = localDataCenterName;
     }
 
     /**
