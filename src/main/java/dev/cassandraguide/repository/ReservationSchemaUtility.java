@@ -5,13 +5,14 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.metadata.schema.ClusteringOrder;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.core.type.UserDefinedType;
-import com.datastax.oss.driver.api.querybuilder.SchemaBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.createTable;
 import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.createType;
-import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.
+import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.createKeyspace;
+import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.dropKeyspace;
+import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.dropTable;
 
 /**
  * Utility class to help manage the reservation schema including creating tables
@@ -23,6 +24,36 @@ public class ReservationSchemaUtility {
 
     /** Logger for the class. */
     private static final Logger logger = LoggerFactory.getLogger(ReservationSchemaUtility.class);
+
+    /**
+     * Create reservation keyspace as per defined in 'reservation.cql'
+     * @param cqlSession
+     * @param keyspaceName
+     */
+    public static void createReservationKeyspace(CqlSession cqlSession, CqlIdentifier keyspaceName) {
+        /**
+         * Create KEYSPACE 'reservation' if not exists
+         *
+         * CREATE KEYSPACE reservation
+         *   WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};
+         */
+        cqlSession.execute(
+                createKeyspace(keyspaceName)
+                        .ifNotExists()
+                        .withSimpleStrategy(1)
+                        .build());
+        logger.debug("+ Keyspace '{}' has been created (if needed)", keyspaceName);
+    }
+
+    public static void dropReservationKeyspace(CqlSession cqlSession, CqlIdentifier keyspaceName) {
+        /**
+         * Drop KEYSPACE 'reservation'
+         *
+         * DROP KEYSPACE reservation
+         */
+        cqlSession.execute(dropKeyspace(keyspaceName).build());
+        logger.debug("+ Keyspace '{}' has been dropped", keyspaceName);
+    }
 
     /**
      * Create user defined types and relevant tables as per defined in 'reservation.cql'

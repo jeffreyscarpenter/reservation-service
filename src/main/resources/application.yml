@@ -15,5 +15,3 @@ server:
 # ----------------------------------------------------------
 cassandra:
   keyspaceName: reservation
-  dropSchema: false
-  

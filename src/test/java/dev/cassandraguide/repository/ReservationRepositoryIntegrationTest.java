@@ -54,8 +54,9 @@ public class ReservationRepositoryIntegrationTest {
     @BeforeEach
     public void _clearTables() {
         // Regenerate the keyspace
-        ;
-        ReservationSchemaUtility.createReservationTables(cassandraConfig.cqlSession(), reservationRepo.keyspaceName);
+        ReservationSchemaUtility.dropReservationKeyspace(cassandraConfig.cqlSession(), cassandraConfig.keyspace());
+        ReservationSchemaUtility.createReservationKeyspace(cassandraConfig.cqlSession(), cassandraConfig.keyspace());
+        ReservationSchemaUtility.createReservationTables(cassandraConfig.cqlSession(), cassandraConfig.keyspace());
     }
     
     @Test
