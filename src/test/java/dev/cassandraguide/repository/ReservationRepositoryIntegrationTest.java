@@ -45,9 +45,6 @@ public class ReservationRepositoryIntegrationTest {
     public static void _initReservationRepository() {
         // Mapping from Container to repository
         cassandraConfig = new CassandraConfiguration();
-        //cassandraConfig.setDropSchema(true);
-        //cassandraConfig.setCassandraUsername(cassandraContainer.getContainerIpAddress());
-        //cassandraConfig.setCassandraPassword(cassandraContainer.getMappedPort(9042));
         reservationRepo = new ReservationRepository(cassandraConfig.cqlSession(), cassandraConfig.keyspace());
     }
     
@@ -55,10 +52,10 @@ public class ReservationRepositoryIntegrationTest {
      * ReCreate keyspace and table before each test
      */
     @BeforeEach
-    public void _recreateSchema() {
+    public void _clearTables() {
         // Regenerate the keyspace
-        cassandraConfig.cqlSession();
-        reservationRepo.createReservationTables();
+        ;
+        ReservationSchemaUtility.createReservationTables(cassandraConfig.cqlSession(), reservationRepo.keyspaceName);
     }
     
     @Test

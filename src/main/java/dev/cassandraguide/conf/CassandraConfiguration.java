@@ -42,10 +42,6 @@ public class CassandraConfiguration {
     // Keyspace Name
     @Value("${cassandra.keyspaceName:reservation}")
     public String keyspaceName = "reservation";
-    
-    // Option to drop schema and generate table again at startup
-    @Value("${cassandra.dropSchema:true}")
-    public boolean dropSchema;
 
     /**
      * Default configuration.
@@ -56,13 +52,10 @@ public class CassandraConfiguration {
      * Initialization of Configuration.
      *
      * @param keyspaceName
-     * @param dropSchema
      */
-    public CassandraConfiguration(
-            String keyspaceName, boolean dropSchema) {
+    public CassandraConfiguration(String keyspaceName) {
         super();
         this.keyspaceName        = keyspaceName;
-        this.dropSchema          = dropSchema;
     }
     
     /**
@@ -78,9 +71,7 @@ public class CassandraConfiguration {
     @Bean
     public CqlSession cqlSession() {
         return CqlSession.builder()
-                //.addContactPoint(new InetSocketAddress(getCassandraUsername(), getCassandraPassword()))
                 .withKeyspace(keyspace())
-                //.withLocalDatacenter(getLocalDataCenterName())
                 .build();
     }
 
@@ -103,25 +94,5 @@ public class CassandraConfiguration {
         this.keyspaceName = keyspaceName;
     }
 
-    /**
-     * Getter accessor for attribute 'dropSchema'.
-     *
-     * @return
-     *       current value of 'dropSchema'
-     */
-    public boolean isDropSchema() {
-        return dropSchema;
-    }
-
-    /**
-     * Setter accessor for attribute 'dropSchema'.
-     * @param dropSchema
-     * 		new value for 'dropSchema '
-     */
-    public void setDropSchema(boolean dropSchema) {
-        this.dropSchema = dropSchema;
-    }
-    
-    
 
 }
