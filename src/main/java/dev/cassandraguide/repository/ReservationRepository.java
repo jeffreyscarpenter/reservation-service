@@ -106,9 +106,10 @@ public class ReservationRepository {
         this.cqlSession   = cqlSession;
         this.keyspaceName = keyspaceName;
         
-        // Will create tables (if they do not exist)
+        // Will create keyspace and tables (if they do not exist)
+        ReservationSchemaUtility.createReservationKeyspace(cqlSession, keyspaceName);
         ReservationSchemaUtility.createReservationTables(cqlSession, keyspaceName);
-        
+
         // Prepare Statements of reservation
         prepareStatements();
         logger.info("Application initialized.");

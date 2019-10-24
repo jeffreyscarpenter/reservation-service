@@ -15,9 +15,6 @@
  */
 package dev.cassandraguide.conf;
 
-import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.createKeyspace;
-import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.dropKeyspace;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -71,7 +68,7 @@ public class CassandraConfiguration {
     @Bean
     public CqlSession cqlSession() {
         return CqlSession.builder()
-                .withKeyspace(keyspace())
+                //.withKeyspace(keyspace())
                 .build();
     }
 

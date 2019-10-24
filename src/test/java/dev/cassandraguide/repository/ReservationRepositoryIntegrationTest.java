@@ -18,7 +18,7 @@ import dev.cassandraguide.model.Reservation;
 /**
  * An integration test for {@link ReservationRepositoryTest}. 
  * 
- * <p>We start a Cassandra container using TestContainers (mapping a random host and port).
+ * <p>We (optionally) start a Cassandra container using TestContainers (mapping a random host and port).
  * <p>There will be a single Container and schema is reinitialized at each method (to speed up).
  * <p>This unit test does not require a Spring application context to be created.
  *
@@ -30,12 +30,7 @@ public class ReservationRepositoryIntegrationTest {
      * Singleton Pattern avoid waiting container init for each method
      */
     private static CassandraConfiguration cassandraConfig    = null;
-    private static GenericContainer<?>    cassandraContainer = null;
     private static ReservationRepository  reservationRepo    = null;
-    static {
-        cassandraContainer = new CassandraContainer<>("cassandra:3.11.4");
-        cassandraContainer.start();
-    }
     
     /* 
      * Initialize repository once as well against Cassandra docker container
@@ -43,20 +38,22 @@ public class ReservationRepositoryIntegrationTest {
      */
     @BeforeAll
     public static void _initReservationRepository() {
-        // Mapping from Container to repository
+        TestConfiguration testConfiguration = new TestConfiguration();
+        if (testConfiguration.getUseContainer()) {
+            GenericContainer<?> cassandraContainer = new CassandraContainer<>("cassandra:3.11.4");
+            cassandraContainer.start();
+        }
         cassandraConfig = new CassandraConfiguration();
         reservationRepo = new ReservationRepository(cassandraConfig.cqlSession(), cassandraConfig.keyspace());
     }
     
     /*
-     * ReCreate keyspace and table before each test
+     * Truncate tables before each test
      */
     @BeforeEach
     public void _clearTables() {
         // Regenerate the keyspace
-        ReservationSchemaUtility.dropReservationKeyspace(cassandraConfig.cqlSession(), cassandraConfig.keyspace());
-        ReservationSchemaUtility.createReservationKeyspace(cassandraConfig.cqlSession(), cassandraConfig.keyspace());
-        ReservationSchemaUtility.createReservationTables(cassandraConfig.cqlSession(), cassandraConfig.keyspace());
+        ReservationSchemaUtility.truncateReservationTables(cassandraConfig.cqlSession(), cassandraConfig.keyspace());
     }
     
     @Test

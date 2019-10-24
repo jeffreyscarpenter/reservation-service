@@ -13,6 +13,7 @@ import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.createType;
 import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.createKeyspace;
 import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.dropKeyspace;
 import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.dropTable;
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.truncate;
 
 /**
  * Utility class to help manage the reservation schema including creating tables
@@ -37,11 +38,15 @@ public class ReservationSchemaUtility {
          * CREATE KEYSPACE reservation
          *   WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 1};
          */
-        cqlSession.execute(
-                createKeyspace(keyspaceName)
-                        .ifNotExists()
-                        .withSimpleStrategy(1)
-                        .build());
+        try {
+            cqlSession.execute(
+                    createKeyspace(keyspaceName)
+                            .ifNotExists()
+                            .withSimpleStrategy(1)
+                            .build());
+        } catch (Exception e) {
+            logger.debug("+ Error creating keyspace '{}'", e.toString());
+        }
         logger.debug("+ Keyspace '{}' has been created (if needed)", keyspaceName);
     }
 
@@ -51,8 +56,11 @@ public class ReservationSchemaUtility {
          *
          * DROP KEYSPACE reservation
          */
-        cqlSession.execute(dropKeyspace(keyspaceName).build());
-        logger.debug("+ Keyspace '{}' has been dropped", keyspaceName);
+        cqlSession.execute(
+                dropKeyspace(keyspaceName)
+                        .ifExists()
+                        .build());
+        logger.debug("+ Keyspace '{}' has been dropped (if needed)", keyspaceName);
     }
 
     /**
@@ -186,11 +194,11 @@ public class ReservationSchemaUtility {
     }
 
     /**
-     * Create user defined types and relevant tables as per defined in 'reservation.cql'
+     * Drop tables as defined in 'reservation.cql'
      * @param cqlSession
      * @param keyspaceName
      */
-    public static void truncateReservationTables(CqlSession cqlSession, CqlIdentifier keyspaceName) {
+    public static void dropReservationTables(CqlSession cqlSession, CqlIdentifier keyspaceName) {
 
         cqlSession.execute(dropTable(keyspaceName,
                 ReservationRepository.TABLE_RESERVATION_BY_HOTEL_DATE).build());
@@ -209,6 +217,32 @@ public class ReservationSchemaUtility {
         cqlSession.execute(dropTable(keyspaceName, ReservationRepository.TABLE_GUESTS)
                 .build());
         logger.debug("+ Table '{}' has been dropped", ReservationRepository.TABLE_GUESTS.asInternal());
+    }
+
+    /**
+     * Truncate tables as defined in 'reservation.cql'
+     * @param cqlSession
+     * @param keyspaceName
+     */
+    public static void truncateReservationTables(CqlSession cqlSession, CqlIdentifier keyspaceName) {
+
+        cqlSession.execute(truncate(keyspaceName,
+                ReservationRepository.TABLE_RESERVATION_BY_HOTEL_DATE).build());
+        logger.debug("+ Table '{}' has been truncated", ReservationRepository.TABLE_RESERVATION_BY_HOTEL_DATE.asInternal());
+
+        cqlSession.execute(truncate(keyspaceName,
+                ReservationRepository.TABLE_RESERVATION_BY_CONFI)
+                .build());
+        logger.debug("+ Table '{}' has been truncated", ReservationRepository.TABLE_RESERVATION_BY_CONFI.asInternal());
+
+        cqlSession.execute(truncate(keyspaceName,
+                ReservationRepository.TABLE_RESERVATION_BY_GUEST)
+                .build());
+        logger.debug("+ Table '{}' has been truncated", ReservationRepository.TABLE_RESERVATION_BY_GUEST.asInternal());
+
+        cqlSession.execute(truncate(keyspaceName, ReservationRepository.TABLE_GUESTS)
+                .build());
+        logger.debug("+ Table '{}' has been truncated", ReservationRepository.TABLE_GUESTS.asInternal());
     }
 
 }

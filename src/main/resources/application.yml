@@ -3,7 +3,7 @@
 # ----------------------------------------------------------
 spring:
   application:
-    name: Reservation Reservicess
+    name: Reservation Services
   jackson:
     serialization:
       WRITE_DATES_AS_TIMESTAMPS: false
