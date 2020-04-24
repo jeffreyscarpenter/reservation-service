@@ -24,20 +24,14 @@ You'll need a Cassandra cluster consisting of least one node. Here are two quick
 
 - Option 1: Local instance
     - Download binaries for your platform from http://cassandra.apache.org/download/
-    - Unzip the archive, for example `tar xvf apache-cassandra-3.11.4-bin.tar.gz some-directory`
+    - Unzip the archive, for example `tar xvf apache-cassandra-3.11.6-bin.tar.gz some-directory`
     - Start Cassandra by running `bin/cassandra`
-
-- Option 2: Run Cassandra in Docker
-    - Easiest: use Docker Compose: `docker-compose up -d`
-    - Alternatively: 
-        - Obtain from [DockerHub][docker-hub]: `docker pull cassandra`
-        - Start Cassandra: `docker run -p 9042:9042 cassandra `
-
-To run the Reservation Service, you'll need to do the following:
-
-- Running via Maven
-    - `mvn spring-boot:run`
-
+    - Start spring-boot app by running `./mvnw spring-boot:run` 
+      
+- Option 2: Run Cassandra and spring-boot app in Docker with `docker-compose` command.
+    - `docker-compose up` if you want to follow the logs **OR**
+    - `docker-compose up -d` to start all containers in detached mode.
+    
 - Running in IntelliJ IDEA
     - Confirm the default JDK is version 11 or later
     - Select the menu option “File -> New -> Project from Existing Sources” 
