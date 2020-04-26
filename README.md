@@ -1,19 +1,21 @@
 # reservation-service
-This repository provides a sample microservice implementation based on the
-reservation data model from the O'Reilly book [Cassandra: The Definitive Guide, 2nd Edition](http://shop.oreilly.com/product/0636920043041.do).
+This repository provides a sample microservice implementation based on the reservation data model from the O'Reilly book [Cassandra: The Definitive Guide, 3nd Edition](https://www.amazon.com/Cassandra-Definitive-Guide-Distributed-Scale/dp/1098115163)
 
 ![Book Cover](images/cassandra-tdg.jpg)
 
+See especially Chapter 7: "Designing Applications with Cassandra", which describes the design of the service, and Chapter 8: "Application Development with Drivers", which covers the implementation.
+
 ## Overview
-The goal of this project is to provide a minimally functional implementation of a microservice that uses 
-Apache Cassandra for its data storage via the DataStax Java Driver. The Reservation Service is implemented as a RESTful service using Spring Boot and exposes it's API via Swagger.
+The goal of this project is to provide a minimally functional implementation of a microservice that uses Apache Cassandra for its data storage via the DataStax Java Driver. The Reservation Service is implemented as a RESTful service using Spring Boot and exposes it's API via Swagger.
+
+![Reservation Service Design](images/reservation-service.png)
+
 
 This service leverages the [reservation schema][schema] developed in the book, based on the data model shown here:
 
-![Book Cover](images/cass_05_reservation_physical.png)
+![Reservation Schema](images/cass_05_reservation_physical.png)
 
-If you'd like to understand more about the motivation behind this design, you can access the data modeling chapter 
-from the book for free at the [O'Reilly website][chapter].
+If you'd like to understand more about the motivation behind this design, you can access the data modeling chapter from the book for free at the [O'Reilly website][chapter].
 
 ## Requirements
 
@@ -49,33 +51,20 @@ Once the application is running, you can access the Swagger API at `localhost:80
 
 
 ## Exercises
-This repository is configured with branches that represent the start point and solution for various exercises 
-used in an online course taught periodically with [O'Reilly Live Training][live-training]. These exercises 
-remove some of the application code and require you to add it back in to get the service back to a functional 
-state. There are exercises to help you learn the various ways of executing statements, such as `SimpleStatement`, 
-`PreparedStatement`, `QueryBuilder` and the Object Mapper. Other exercises teach you how to use batches, 
-lightweight transactions and materialized views.
+This repository is configured with branches that represent the start point and solution for various exercises used in an online course taught periodically with [O'Reilly Live Training][live-training]. These exercises remove some of the application code and require you to add it back in to get the service back to a functional state. There are exercises to help you learn the various ways of executing statements, such as `SimpleStatement`, `PreparedStatement`, `QueryBuilder` and the Object Mapper. Other exercises teach you how to use batches, lightweight transactions and materialized views.
 
-To work on an exercise, select the branch that represents the start point of the exercise, for example: 
-`git checkout simple-statement`. Then search through the code and complete the `TODO` items and run the 
-service again until the service is working. You can view the solution code for a given exercise in the `_solution` branch, for example `git checkout simple-statement-solution`.
+To work on an exercise, select the branch that represents the start point of the exercise, for example: `git checkout simple-statement`. Then search through the code and complete the `TODO` items and run the service again until the service is working. You can view the solution code for a given exercise in the `_solution` branch, for example `git checkout simple-statement-solution`.
 
-This repository has been updated in July 2019 to use the DataStax Java Driver Version 4.1. 
-Branches beginning with `old_` represent exercises from a prior version of the course and use the 2.x Driver.
+This repository has been updated in July 2019 to use the DataStax Java Driver Version 4.1. Branches beginning with `old_` represent exercises from a prior version of the course and use the 2.x Driver.
 
 ## Disclaimers
-This service has a couple of shortcomings that would be inappropriate for a production-ready service
-implementation:
+This service has a couple of shortcomings that would be inappropriate for a production-ready service implementation:
 
 - There is minimal data validation
 - There is minimal handling of fault cases
 - The schema makes use of Strings as identifiers instead of UUIDs
 
-With respect to that last point about UUIDs: for this service I take the same approach that I did for the book.
-When working with small scale examples, it is simpler to deal with IDs that are human readable strings. 
-If I were intending to build a real system out of this or even implement more of the "ecosystem" of services
-implied by the book's data model, I would move toward using UUIDs for identifiers. For more of my thinking on this 
-topic, please read the [Identity blog post][identity] from my [Data Model Meets World][dmmw] series. 
+With respect to that last point about UUIDs: for this service I take the same approach that I did for the book. When working with small scale examples, it is simpler to deal with IDs that are human readable strings. If I were intending to build a real system out of this or even implement more of the "ecosystem" of services implied by the book's data model, I would move toward using UUIDs for identifiers. For more of my thinking on this topic, please read the [Identity blog post][identity] from my [Data Model Meets World][dmmw] series. 
 
 ## Credits
 I found [this tutorial][tutorial] helpful in getting this implementation up and running quickly. 
@@ -84,7 +73,7 @@ Special thanks to [Cedrick Lunven][clun] for his help in modernizing this app.
 
 Comments, improvements and feedback are welcome.
 
-Copyright 2017-2019 Jeff Carpenter
+Copyright 2017-2020 Jeff Carpenter
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
