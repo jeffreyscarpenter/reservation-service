@@ -1,5 +1,5 @@
 # reservation-service
-This repository provides a sample microservice implementation based on the reservation data model from the O'Reilly book [Cassandra: The Definitive Guide, 3nd Edition](https://www.amazon.com/Cassandra-Definitive-Guide-Distributed-Scale/dp/1098115163)
+This repository provides a sample microservice implementation based on the reservation data model from the O'Reilly book [Cassandra: The Definitive Guide, 3rd Edition](https://www.amazon.com/Cassandra-Definitive-Guide-Distributed-Scale/dp/1098115163)
 
 ![Book Cover](images/cassandra-tdg.jpg)
 
