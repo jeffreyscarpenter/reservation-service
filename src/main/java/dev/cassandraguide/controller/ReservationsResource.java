@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Jeff Carpenter
+ * Copyright (C) 2017-2020 Jeff Carpenter
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -280,7 +280,7 @@ public class ReservationsResource {
             @ApiParam(
                         name="date", 
                         value="ISO value for date yyyy-MM-dd", 
-                        example = "2019-06-20",
+                        example = "2020-06-20",
                         required=false )
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) 
             LocalDate date) {
