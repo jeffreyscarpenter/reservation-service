@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Jeff Carpenter
+ * Copyright (C) 2017-2020 Jeff Carpenter
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,11 +41,11 @@ public class ReservationRequest implements Serializable {
     private String hotelId;
     
     /** Formated as YYYY-MM-DD in interfaces. */
-    @ApiModelProperty(value = "Start of the stay in YYYY-MM-DD", example = "2019-06-24")
+    @ApiModelProperty(value = "Start of the stay in YYYY-MM-DD", example = "2020-06-24")
     private LocalDate startDate;
     
     /** Formated as YYYY-MM-DD in interfaces. */
-    @ApiModelProperty(value = "End of the stay in YYYY-MM-DD", example = "2019-06-26")
+    @ApiModelProperty(value = "End of the stay in YYYY-MM-DD", example = "2020-06-26")
     private LocalDate endDate;
     
     /** Room number. */
