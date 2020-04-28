@@ -37,18 +37,18 @@ import static com.datastax.oss.driver.api.mapper.entity.naming.NamingConvention.
 public class ReservationsByHotelDate {
 
     /** Hotel identifier, as Text not UUID (for simplicity). */
-    @PartitionKey
+    @PartitionKey(1)
     private String hotelId;
 
     /** Formated as YYYY-MM-DD in interfaces. */
-    @ClusteringColumn(1)
+    @PartitionKey(2)
     private LocalDate startDate;
 
     /** Formated as YYYY-MM-DD in interfaces. */
     private LocalDate endDate;
 
     /** Room number. */
-    @ClusteringColumn(2)
+    @ClusteringColumn
     private short roomNumber;
 
     /** UUID. */
