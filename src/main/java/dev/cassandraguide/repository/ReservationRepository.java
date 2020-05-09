@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PreDestroy;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import dev.cassandraguide.model.Reservation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +52,10 @@ import com.datastax.oss.driver.api.core.metadata.schema.ClusteringOrder;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.core.type.UserDefinedType;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
+
+// TODO: Review imports for publishing to Kafka
+import org.apache.kafka.clients.producer.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * The goal of this project is to provide a minimally functional implementation of a microservice 
@@ -103,14 +108,30 @@ public class ReservationRepository {
     /** CqlSession holding metadata to interact with Cassandra. */
     private CqlSession     cqlSession;
     private CqlIdentifier  keyspaceName;
+
+    // TODO: Review variables used for publishing to Kafka
+
+    /** KafkaProducer for publishing messages to Kafka. */
+    private KafkaProducer<String, String> kafkaProducer;
+    private String kafkaTopicName;
+
+    private ObjectMapper objectMapper;
     
     /** External Initialization. */
     public ReservationRepository(
             @NonNull CqlSession cqlSession, 
-            @Qualifier("keyspace") @NonNull CqlIdentifier keyspaceName) {
+            @Qualifier("keyspace") @NonNull CqlIdentifier keyspaceName,
+            @NonNull KafkaProducer<String, String> kafkaProducer,
+            @NonNull String topicName) {
         this.cqlSession   = cqlSession;
         this.keyspaceName = keyspaceName;
-        
+
+        // TODO: Review initialization of objects needed for publishing to Kafka
+        this.kafkaProducer = kafkaProducer;
+        this.kafkaTopicName = topicName;
+
+        objectMapper = new ObjectMapper();
+
         // Will create tables (if they do not exist)
         createReservationTables();
         
@@ -203,6 +224,18 @@ public class ReservationRepository {
                     .addStatement(bsInsertReservationByConfirmation)
                     .build();
         cqlSession.execute(batchInsertReservation);
+
+        // TODO: Publish to Kafka
+         try {
+
+             String reservationJson = objectMapper.writeValueAsString(reservation);
+             ProducerRecord<String, String> record = new ProducerRecord<>("reservation", reservation.getConfirmationNumber(), reservationJson);
+             kafkaProducer.send(record);
+         } catch (Exception e)
+         {
+             logger.warn("Error publishing reservation message to Kafka: {}", e);
+         }
+
         return reservation.getConfirmationNumber();
     }
 
@@ -251,6 +284,12 @@ public class ReservationRepository {
                     .addStatement(bsDeleteReservationByConfirmation)
                     .build();
             cqlSession.execute(batchDeleteReservation);
+
+            // TODO: Publish to Kafka
+
+            ProducerRecord<String, String> record = new ProducerRecord<>("reservation", reservation.getConfirmationNumber(), "");
+            kafkaProducer.send(record);
+
             return true;
         }
         return false;

@@ -142,7 +142,12 @@
 			<scope>test</scope>
 			<version>${testcontainers.version}</version>
 		</dependency>
-		
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>kafka</artifactId>
+			<scope>test</scope>
+			<version>${testcontainers.version}</version>
+		</dependency>
 		<!-- Add driver keys to spring-boot config file -->
 		<dependency>
            <groupId>org.springframework.boot</groupId>

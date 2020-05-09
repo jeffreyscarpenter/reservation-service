@@ -19,4 +19,11 @@ cassandra:
   keyspaceName: reservation
   localDataCenterName: datacenter1
   dropSchema: false
-  
+
+# ----------------------------------------------------------
+# Kafka Producer Config
+# ----------------------------------------------------------
+kafka:
+  bootstrap-servers: localhost:9092
+  client-id: ReservationService
+  topicName: reservation

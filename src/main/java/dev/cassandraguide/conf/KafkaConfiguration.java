@@ -15,8 +15,6 @@
  */
 package dev.cassandraguide.conf;
 
-import com.datastax.oss.driver.api.core.CqlIdentifier;
-import com.datastax.oss.driver.api.core.CqlSession;
 import dev.cassandraguide.repository.ReservationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,15 +22,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.net.InetSocketAddress;
-
-import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.createKeyspace;
-import static com.datastax.oss.driver.api.querybuilder.SchemaBuilder.dropKeyspace;
+import org.apache.kafka.clients.producer.*;
+import org.apache.kafka.common.serialization.StringSerializer;
+import java.util.Properties;
 
 /**
  * Import Configuration from Configuration File
  *
- * @author Cedrick Lunven
+ * @author Jeff Carpenter
  */
 @Configuration
 public class KafkaConfiguration {
@@ -40,25 +37,17 @@ public class KafkaConfiguration {
     // Logger
     private static final Logger logger = LoggerFactory.getLogger(ReservationRepository.class);
 
-    // Contact point hostname, single host
-    @Value("${cassandra.contactPoint:127.0.0.1}")
-    protected String cassandraHost;
+    // Bootstrap servers
+    @Value("${kafka.bootstrap-servers:localhost:9092}")
+    protected String bootstrapServers;
 
-    // Contact point port
-    @Value("${cassandra.port:9042}")
-    protected int cassandraPort;
+    // Kafka Client ID
+    @Value("${kafka.client-id:ReservationService}")
+    protected String clientId = "ReservationService";
 
-    // DataCenter name, required from v2.
-    @Value("${cassandra.localDataCenterName:datacenter1}")
-    protected String localDataCenterName = "datacenter1";
-
-    // Keyspace Name
-    @Value("${cassandra.keyspaceName:reservation}")
-    public String keyspaceName = "reservation";
-
-    // Option to drop schema and generate table again at startup
-    @Value("${cassandra.dropSchema:true}")
-    public boolean dropSchema;
+    // Topic Name
+    @Value("${kafka.topicName:reservation}")
+    public String topicName = "reservation";
 
     /**
      * Default configuration.
@@ -68,149 +57,85 @@ public class KafkaConfiguration {
     /**
      * Initialization of Configuration.
      *
-     * @param cassandraHost
-     * @param cassandraPort
-     * @param localDataCenterName
-     * @param keyspaceName
-     * @param dropSchema
+     * @param bootstrapServers
+     * @param clientId
+     * @param topicName
      */
     public KafkaConfiguration(
-            String cassandraHost, int cassandraPort, String localDataCenterName, 
-            String keyspaceName,  boolean dropSchema) {
+            String bootstrapServers, String clientId, String topicName) {
         super();
-        this.cassandraHost       = cassandraHost;
-        this.cassandraPort       = cassandraPort;
-        this.keyspaceName        = keyspaceName;
-        this.dropSchema          = dropSchema;
-        this.localDataCenterName = localDataCenterName;
+        this.bootstrapServers = bootstrapServers;
+        this.clientId = clientId;
+        this.topicName = topicName;
     }
-    
-    /**
-     * Returns the keyspace to connect to. The keyspace specified here must exist.
-     *
-     * @return The {@linkplain CqlIdentifier keyspace} bean.
-     */
+
     @Bean
-    public CqlIdentifier keyspace() {
-      return CqlIdentifier.fromCql(keyspaceName);
-    }
-    
-    @Bean
-    public CqlSession cqlSession() {
-        logger.info("Creating Keyspace and expected table in Cassandra if not present.");
-        try(CqlSession tmpSession = CqlSession.builder()
-                               .addContactPoint(new InetSocketAddress(getCassandraHost(), getCassandraPort()))
-                               .withLocalDatacenter(getLocalDataCenterName())
-                               .build()) {
-            if (isDropSchema()) {
-                tmpSession.execute(dropKeyspace(keyspace()).ifExists().build());
-                logger.debug("+ Keyspace '{}' has been dropped (if existed)", keyspace());
-            }
-            tmpSession.execute(createKeyspace(keyspace()).ifNotExists().withSimpleStrategy(1).build());
-            logger.debug("+ Keyspace '{}' has been created (if needed)", keyspace());
-        }
-        return CqlSession.builder()
-                .addContactPoint(new InetSocketAddress(getCassandraHost(), getCassandraPort()))
-                .withKeyspace(keyspace())
-                .withLocalDatacenter(getLocalDataCenterName())
-                .build();
+    public KafkaProducer<String, String> kafkaProducer() {
+        logger.info("Creating Kafka Producer.");
+
+        Properties props = new Properties();
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ProducerConfig.CLIENT_ID_CONFIG, clientId);
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+        return new KafkaProducer<>(props);
     }
 
     /**
-     * Getter accessor for attribute 'cassandraHost'.
+     * Getter accessor for attribute 'bootstrapServers'.
      *
      * @return
-     *       current value of 'cassandraHost'
+     *       current value of 'bootstrapServers'
      */
-    public String getCassandraHost() {
-        return cassandraHost;
+    public String getBootstrapServers() {
+        return bootstrapServers;
     }
 
     /**
-     * Setter accessor for attribute 'cassandraHost'.
-     * @param cassandraHost
-     * 		new value for 'cassandraHost '
+     * Setter accessor for attribute 'bootstrapServers'.
+     * @param bootstrapServers
+     * 		new value for 'bootstrapServers'
      */
-    public void setCassandraHost(String cassandraHost) {
-        this.cassandraHost = cassandraHost;
+    public void setBootstrapServers(String bootstrapServers) {
+        this.bootstrapServers = bootstrapServers;
     }
 
     /**
-     * Getter accessor for attribute 'cassandraPort'.
+     * Getter accessor for attribute 'clientId'.
      *
      * @return
-     *       current value of 'cassandraPort'
+     *       current value of 'clientId'
      */
-    public int getCassandraPort() {
-        return cassandraPort;
+    public String getClientId() {
+        return clientId;
     }
 
     /**
-     * Setter accessor for attribute 'cassandraPort'.
-     * @param cassandraPort
-     * 		new value for 'cassandraPort '
+     * Setter accessor for attribute 'clientId'.
+     * @param clientId
+     * 		new value for 'clientId '
      */
-    public void setCassandraPort(int cassandraPort) {
-        this.cassandraPort = cassandraPort;
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
     }
 
     /**
-     * Getter accessor for attribute 'localDataCenterName'.
+     * Getter accessor for attribute 'topicName'.
      *
      * @return
-     *       current value of 'localDataCenterName'
+     *       current value of 'topicName'
      */
-    public String getLocalDataCenterName() {
-        return localDataCenterName;
+    public String getTopicName() {
+        return topicName;
     }
 
     /**
-     * Setter accessor for attribute 'localDataCenterName'.
-     * @param localDataCenterName
-     * 		new value for 'localDataCenterName '
+     * Setter accessor for attribute 'topicName'.
+     * @param topicName
+     * 		new value for 'topicName '
      */
-    public void setLocalDataCenterName(String localDataCenterName) {
-        this.localDataCenterName = localDataCenterName;
+    public void setTopicName(String topicName) {
+        this.topicName = topicName;
     }
-
-    /**
-     * Getter accessor for attribute 'keyspaceName'.
-     *
-     * @return
-     *       current value of 'keyspaceName'
-     */
-    public String getKeyspaceName() {
-        return keyspaceName;
-    }
-
-    /**
-     * Setter accessor for attribute 'keyspaceName'.
-     * @param keyspaceName
-     * 		new value for 'keyspaceName '
-     */
-    public void setKeyspaceName(String keyspaceName) {
-        this.keyspaceName = keyspaceName;
-    }
-
-    /**
-     * Getter accessor for attribute 'dropSchema'.
-     *
-     * @return
-     *       current value of 'dropSchema'
-     */
-    public boolean isDropSchema() {
-        return dropSchema;
-    }
-
-    /**
-     * Setter accessor for attribute 'dropSchema'.
-     * @param dropSchema
-     * 		new value for 'dropSchema '
-     */
-    public void setDropSchema(boolean dropSchema) {
-        this.dropSchema = dropSchema;
-    }
-    
-    
 
 }

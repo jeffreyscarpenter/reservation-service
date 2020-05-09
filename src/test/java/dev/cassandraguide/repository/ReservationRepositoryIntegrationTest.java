@@ -10,9 +10,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.CassandraContainer;
+import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.GenericContainer;
 
 import dev.cassandraguide.conf.CassandraConfiguration;
+import dev.cassandraguide.conf.KafkaConfiguration;
 import dev.cassandraguide.model.Reservation;
 
 /**
@@ -30,11 +32,15 @@ public class ReservationRepositoryIntegrationTest {
      * Singleton Pattern avoid waiting container init for each method
      */
     private static CassandraConfiguration cassandraConfig    = null;
+    private static KafkaConfiguration kafkaConfig    = null;
     private static GenericContainer<?>    cassandraContainer = null;
+    private static GenericContainer<?>    kafkaContainer = null;
     private static ReservationRepository  reservationRepo    = null;
     static {
         cassandraContainer = new CassandraContainer<>("cassandra:3.11.4");
         cassandraContainer.start();
+        kafkaContainer = new KafkaContainer();
+        kafkaContainer.start();
     }
     
     /* 
@@ -48,7 +54,8 @@ public class ReservationRepositoryIntegrationTest {
         cassandraConfig.setDropSchema(true);
         cassandraConfig.setCassandraHost(cassandraContainer.getContainerIpAddress());
         cassandraConfig.setCassandraPort(cassandraContainer.getMappedPort(9042));
-        reservationRepo = new ReservationRepository(cassandraConfig.cqlSession(), cassandraConfig.keyspace());
+        reservationRepo = new ReservationRepository(cassandraConfig.cqlSession(), cassandraConfig.keyspace(),
+                kafkaConfig.kafkaProducer(), kafkaConfig.getTopicName() );
     }
     
     /*
