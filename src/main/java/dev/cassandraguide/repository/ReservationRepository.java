@@ -223,7 +223,7 @@ public class ReservationRepository {
                     .build();
         cqlSession.execute(batchInsertReservation);
 
-        // TODO: Publish to Kafka
+        // TODO: Publish message to Kafka containing reservation
          try {
              String reservationJson = objectMapper.writeValueAsString(reservation);
              ProducerRecord<String, String> record = new ProducerRecord<>("reservation", reservation.getConfirmationNumber(), reservationJson);
@@ -281,8 +281,7 @@ public class ReservationRepository {
                     .build();
             cqlSession.execute(batchDeleteReservation);
 
-            // TODO: Publish to Kafka
-
+            // TODO: Publish message to Kafka with empty payload to indicate deletion
             ProducerRecord<String, String> record = new ProducerRecord<>("reservation", reservation.getConfirmationNumber(), "");
             kafkaProducer.send(record);
 
