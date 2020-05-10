@@ -110,11 +110,9 @@ public class ReservationRepository {
     private CqlIdentifier  keyspaceName;
 
     // TODO: Review variables used for publishing to Kafka
-
     /** KafkaProducer for publishing messages to Kafka. */
     private KafkaProducer<String, String> kafkaProducer;
     private String kafkaTopicName;
-
     private ObjectMapper objectMapper;
     
     /** External Initialization. */
