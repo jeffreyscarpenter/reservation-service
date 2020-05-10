@@ -54,6 +54,8 @@ public class ReservationRepositoryIntegrationTest {
         cassandraConfig.setDropSchema(true);
         cassandraConfig.setCassandraHost(cassandraContainer.getContainerIpAddress());
         cassandraConfig.setCassandraPort(cassandraContainer.getMappedPort(9042));
+        kafkaConfig = new KafkaConfiguration();
+        kafkaConfig.setBootstrapServers(kafkaContainer.getContainerIpAddress() + ":" + kafkaContainer.getMappedPort(9092));
         reservationRepo = new ReservationRepository(cassandraConfig.cqlSession(), cassandraConfig.keyspace(),
                 kafkaConfig.kafkaProducer(), kafkaConfig.getTopicName() );
     }

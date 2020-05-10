@@ -227,12 +227,10 @@ public class ReservationRepository {
 
         // TODO: Publish to Kafka
          try {
-
              String reservationJson = objectMapper.writeValueAsString(reservation);
              ProducerRecord<String, String> record = new ProducerRecord<>("reservation", reservation.getConfirmationNumber(), reservationJson);
              kafkaProducer.send(record);
-         } catch (Exception e)
-         {
+         } catch (Exception e) {
              logger.warn("Error publishing reservation message to Kafka: {}", e);
          }
 
