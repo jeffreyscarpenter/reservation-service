@@ -231,7 +231,9 @@ public class ReservationRepository {
         // TODO: Publish message to Kafka containing reservation
          try {
              String reservationJson = objectMapper.writeValueAsString(reservation);
-             ProducerRecord<String, String> record = new ProducerRecord<>("reservation", reservation.getConfirmationNumber(), reservationJson);
+             // HINT: use the constructor ProducerRecord(String topic, K key, V value)
+             // with the reservation confirmation number as the key, and the JSON string as the value
+             ProducerRecord<String, String> record = null;
              kafkaProducer.send(record);
          } catch (Exception e) {
              logger.warn("Error publishing reservation message to Kafka: {}", e);
@@ -287,7 +289,9 @@ public class ReservationRepository {
             cqlSession.execute(batchDeleteReservation);
 
             // TODO: Publish message to Kafka with empty payload to indicate deletion
-            ProducerRecord<String, String> record = new ProducerRecord<>("reservation", reservation.getConfirmationNumber(), "");
+            // HINT: use the constructor ProducerRecord(String topic, K key, V value)
+            // with the reservation confirmation number as the key, and an empty string as the value
+            ProducerRecord<String, String> record = null;
             kafkaProducer.send(record);
 
             return true;
