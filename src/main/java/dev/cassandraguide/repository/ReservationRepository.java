@@ -56,6 +56,8 @@ import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 // TODO: Review imports for publishing to Kafka
 import org.apache.kafka.clients.producer.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 /**
  * The goal of this project is to provide a minimally functional implementation of a microservice 
@@ -120,15 +122,18 @@ public class ReservationRepository {
             @NonNull CqlSession cqlSession, 
             @Qualifier("keyspace") @NonNull CqlIdentifier keyspaceName,
             @NonNull KafkaProducer<String, String> kafkaProducer,
-            @NonNull String topicName) {
+            @NonNull String kafkaTopicName) {
         this.cqlSession   = cqlSession;
         this.keyspaceName = keyspaceName;
 
         // TODO: Review initialization of objects needed for publishing to Kafka
         this.kafkaProducer = kafkaProducer;
-        this.kafkaTopicName = topicName;
+        this.kafkaTopicName = kafkaTopicName;
 
         objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT)
 
         // Will create tables (if they do not exist)
         createReservationTables();
