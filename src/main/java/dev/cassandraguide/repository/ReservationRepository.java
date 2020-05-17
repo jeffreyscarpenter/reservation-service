@@ -73,7 +73,7 @@ public class ReservationRepository {
     public static final CqlIdentifier START_DATE                 = CqlIdentifier.fromCql("start_date");
     public static final CqlIdentifier END_DATE                   = CqlIdentifier.fromCql("end_date");
     public static final CqlIdentifier ROOM_NUMBER                = CqlIdentifier.fromCql("room_number");
-    public static final CqlIdentifier CONFIRMATION_NUMBER        = CqlIdentifier.fromCql("confirmation_number");
+    public static final CqlIdentifier CONFIRM_NUMBER             = CqlIdentifier.fromCql("confirm_number");
     public static final CqlIdentifier GUEST_ID                   = CqlIdentifier.fromCql("guest_id");
     public static final CqlIdentifier GUEST_LAST_NAME            = CqlIdentifier.fromCql("guest_last_name");
     public static final CqlIdentifier FIRSTNAME                  = CqlIdentifier.fromCql("first_name");
@@ -262,7 +262,7 @@ public class ReservationRepository {
     private Reservation mapReservationByConfirmationToReservation(ReservationsByConfirmation reservationsByConfirmation) {
         Reservation reservation = new Reservation();
         reservation.setHotelId(reservationsByConfirmation.getHotelId());
-        reservation.setConfirmationNumber(reservationsByConfirmation.getConfirmationNumber());
+        reservation.setConfirmationNumber(reservationsByConfirmation.getConfirmNumber());
         reservation.setGuestId(reservationsByConfirmation.getGuestId());
         reservation.setRoomNumber(reservationsByConfirmation.getRoomNumber());
         reservation.setStartDate(reservationsByConfirmation.getStartDate());
@@ -281,7 +281,7 @@ public class ReservationRepository {
     private Reservation mapReservationByHotelDateToReservation(ReservationsByHotelDate reservationsByHotelDate) {
         Reservation reservation = new Reservation();
         reservation.setHotelId(reservationsByHotelDate.getHotelId());
-        reservation.setConfirmationNumber(reservationsByHotelDate.getConfirmationNumber());
+        reservation.setConfirmationNumber(reservationsByHotelDate.getConfirmNumber());
         reservation.setGuestId(reservationsByHotelDate.getGuestId());
         reservation.setRoomNumber(reservationsByHotelDate.getRoomNumber());
         reservation.setStartDate(reservationsByHotelDate.getStartDate());
@@ -322,10 +322,10 @@ public class ReservationRepository {
          *  start_date date,
          *  end_date date,
          *  room_number smallint,
-         *  confirmation_number text,
+         *  confirm_number text,
          *  guest_id uuid,
          *  PRIMARY KEY ((hotel_id, start_date), room_number)
-         * ) WITH comment = 'Q7. Find reservations by hotel and date';
+         * );
          */
         cqlSession.execute(createTable(keyspaceName, TABLE_RESERVATION_BY_HOTEL_DATE)
                         .ifNotExists()
@@ -333,7 +333,7 @@ public class ReservationRepository {
                         .withPartitionKey(START_DATE, DataTypes.DATE)
                         .withClusteringColumn(ROOM_NUMBER, DataTypes.SMALLINT)
                         .withColumn(END_DATE, DataTypes.DATE)
-                        .withColumn(CONFIRMATION_NUMBER, DataTypes.TEXT)
+                        .withColumn(CONFIRM_NUMBER, DataTypes.TEXT)
                         .withColumn(GUEST_ID, DataTypes.UUID)
                         .withClusteringOrder(ROOM_NUMBER, ClusteringOrder.ASC)
                         .withComment("Q7. Find reservations by hotel and date")
@@ -342,7 +342,7 @@ public class ReservationRepository {
         
         /**
          * CREATE TABLE reservation.reservations_by_confirmation (
-         *   confirmation_number text PRIMARY KEY,
+         *   confirm_number text PRIMARY KEY,
          *   hotel_id text,
          *   start_date date,
          *   end_date date,
@@ -352,7 +352,7 @@ public class ReservationRepository {
          */
         cqlSession.execute(createTable(keyspaceName, TABLE_RESERVATION_BY_CONFI)
                 .ifNotExists()
-                .withPartitionKey(CONFIRMATION_NUMBER, DataTypes.TEXT)
+                .withPartitionKey(CONFIRM_NUMBER, DataTypes.TEXT)
                 .withColumn(HOTEL_ID, DataTypes.TEXT)
                 .withColumn(START_DATE, DataTypes.DATE)
                 .withColumn(END_DATE, DataTypes.DATE)
@@ -368,10 +368,10 @@ public class ReservationRepository {
           *  start_date date,
           *  end_date date,
           *  room_number smallint,
-          *  confirmation_number text,
+          *  confirm_number text,
           *  guest_id uuid,
           *  PRIMARY KEY ((guest_last_name), hotel_id)
-          * ) WITH comment = 'Q8. Find reservations by guest name';
+          * );
           */
          cqlSession.execute(createTable(keyspaceName, TABLE_RESERVATION_BY_GUEST)
                  .ifNotExists()
@@ -380,7 +380,7 @@ public class ReservationRepository {
                  .withColumn(START_DATE, DataTypes.DATE)
                  .withColumn(END_DATE, DataTypes.DATE)
                  .withColumn(ROOM_NUMBER, DataTypes.SMALLINT)
-                 .withColumn(CONFIRMATION_NUMBER, DataTypes.TEXT)
+                 .withColumn(CONFIRM_NUMBER, DataTypes.TEXT)
                  .withColumn(GUEST_ID, DataTypes.UUID)
                  .withComment("Q8. Find reservations by guest name")
                  .build());
@@ -395,8 +395,8 @@ public class ReservationRepository {
            *   emails set<text>,
            *   phone_numbers list<text>,
            *   addresses map<text, frozen<address>>,
-           *   confirmation_number text
-           * ) WITH comment = 'Q9. Find guest by ID';
+           *   confirm_number text
+           * );
            */
           UserDefinedType  udtAddressType = 
                   cqlSession.getMetadata().getKeyspace(keyspaceName).get() // Retrieving KeySpaceMetadata
@@ -410,7 +410,7 @@ public class ReservationRepository {
                   .withColumn(EMAILS, DataTypes.setOf(DataTypes.TEXT))
                   .withColumn(PHONE_NUMBERS, DataTypes.listOf(DataTypes.TEXT))
                   .withColumn(ADDRESSES, DataTypes.mapOf(DataTypes.TEXT, udtAddressType, true))
-                  .withColumn(CONFIRMATION_NUMBER, DataTypes.TEXT)
+                  .withColumn(CONFIRM_NUMBER, DataTypes.TEXT)
                   .withComment("Q9. Find guest by ID")
                   .build());
            logger.debug("+ Table '{}' has been created (if needed)", TABLE_GUESTS.asInternal());
