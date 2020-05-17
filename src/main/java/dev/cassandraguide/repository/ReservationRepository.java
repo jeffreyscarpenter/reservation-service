@@ -38,16 +38,13 @@ import org.springframework.stereotype.Repository;
 // TODO: Review the list of classes we import from the Java driver
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.cql.BatchStatement;
 import com.datastax.oss.driver.api.core.cql.BoundStatement;
-import com.datastax.oss.driver.api.core.cql.DefaultBatchType;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.metadata.schema.ClusteringOrder;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.core.type.UserDefinedType;
-import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 
 /**
  * The goal of this project is to provide a minimally functional implementation of a microservice 
@@ -435,7 +432,7 @@ public class ReservationRepository {
 
             // TODO: Review creation of PreparedStatements
             psExistReservation = cqlSession.prepare(
-                    "SELECT confirmation_number FROM reservations_by_confirmation WHERE confirm_number = ?");
+                    "SELECT confirm_number FROM reservations_by_confirmation WHERE confirm_number = ?");
 
             psFindReservation = cqlSession.prepare(
                     "SELECT * FROM reservations_by_confirmation WHERE confirm_number = ?");
