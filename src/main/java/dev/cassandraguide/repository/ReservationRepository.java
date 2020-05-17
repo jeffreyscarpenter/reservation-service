@@ -81,7 +81,7 @@ public class ReservationRepository {
     public static final CqlIdentifier START_DATE                 = CqlIdentifier.fromCql("start_date");
     public static final CqlIdentifier END_DATE                   = CqlIdentifier.fromCql("end_date");
     public static final CqlIdentifier ROOM_NUMBER                = CqlIdentifier.fromCql("room_number");
-    public static final CqlIdentifier CONFIRMATION_NUMBER        = CqlIdentifier.fromCql("confirmation_number");
+    public static final CqlIdentifier CONFIRM_NUMBER             = CqlIdentifier.fromCql("confirm_number");
     public static final CqlIdentifier GUEST_ID                   = CqlIdentifier.fromCql("guest_id");
     public static final CqlIdentifier GUEST_LAST_NAME            = CqlIdentifier.fromCql("guest_last_name");
     public static final CqlIdentifier FIRSTNAME                  = CqlIdentifier.fromCql("first_name");
@@ -292,7 +292,7 @@ public class ReservationRepository {
     private Reservation mapRowToReservation(Row row) {
         Reservation reservation = new Reservation();
         reservation.setHotelId(row.getString(HOTEL_ID));
-        reservation.setConfirmationNumber(row.getString(CONFIRMATION_NUMBER));
+        reservation.setConfirmationNumber(row.getString(CONFIRM_NUMBER));
         reservation.setGuestId(row.getUuid(GUEST_ID));
         reservation.setRoomNumber(row.getShort(ROOM_NUMBER));
         reservation.setStartDate(row.getLocalDate(START_DATE));
@@ -333,10 +333,10 @@ public class ReservationRepository {
          *  start_date date,
          *  end_date date,
          *  room_number smallint,
-         *  confirmation_number text,
+         *  confirm_number text,
          *  guest_id uuid,
          *  PRIMARY KEY ((hotel_id, start_date), room_number)
-         * ) WITH comment = 'Q7. Find reservations by hotel and date';
+         * );
          */
         cqlSession.execute(createTable(keyspaceName, TABLE_RESERVATION_BY_HOTEL_DATE)
                         .ifNotExists()
@@ -344,7 +344,7 @@ public class ReservationRepository {
                         .withPartitionKey(START_DATE, DataTypes.DATE)
                         .withClusteringColumn(ROOM_NUMBER, DataTypes.SMALLINT)
                         .withColumn(END_DATE, DataTypes.DATE)
-                        .withColumn(CONFIRMATION_NUMBER, DataTypes.TEXT)
+                        .withColumn(CONFIRM_NUMBER, DataTypes.TEXT)
                         .withColumn(GUEST_ID, DataTypes.UUID)
                         .withClusteringOrder(ROOM_NUMBER, ClusteringOrder.ASC)
                         .withComment("Q7. Find reservations by hotel and date")
@@ -353,7 +353,7 @@ public class ReservationRepository {
         
         /**
          * CREATE TABLE reservation.reservations_by_confirmation (
-         *   confirmation_number text PRIMARY KEY,
+         *   confirm_number text PRIMARY KEY,
          *   hotel_id text,
          *   start_date date,
          *   end_date date,
@@ -363,7 +363,7 @@ public class ReservationRepository {
          */
         cqlSession.execute(createTable(keyspaceName, TABLE_RESERVATION_BY_CONFI)
                 .ifNotExists()
-                .withPartitionKey(CONFIRMATION_NUMBER, DataTypes.TEXT)
+                .withPartitionKey(CONFIRM_NUMBER, DataTypes.TEXT)
                 .withColumn(HOTEL_ID, DataTypes.TEXT)
                 .withColumn(START_DATE, DataTypes.DATE)
                 .withColumn(END_DATE, DataTypes.DATE)
@@ -379,10 +379,10 @@ public class ReservationRepository {
           *  start_date date,
           *  end_date date,
           *  room_number smallint,
-          *  confirmation_number text,
+          *  confirm_number text,
           *  guest_id uuid,
           *  PRIMARY KEY ((guest_last_name), hotel_id)
-          * ) WITH comment = 'Q8. Find reservations by guest name';
+          * );
           */
          cqlSession.execute(createTable(keyspaceName, TABLE_RESERVATION_BY_GUEST)
                  .ifNotExists()
@@ -391,7 +391,7 @@ public class ReservationRepository {
                  .withColumn(START_DATE, DataTypes.DATE)
                  .withColumn(END_DATE, DataTypes.DATE)
                  .withColumn(ROOM_NUMBER, DataTypes.SMALLINT)
-                 .withColumn(CONFIRMATION_NUMBER, DataTypes.TEXT)
+                 .withColumn(CONFIRM_NUMBER, DataTypes.TEXT)
                  .withColumn(GUEST_ID, DataTypes.UUID)
                  .withComment("Q8. Find reservations by guest name")
                  .build());
@@ -406,8 +406,8 @@ public class ReservationRepository {
            *   emails set<text>,
            *   phone_numbers list<text>,
            *   addresses map<text, frozen<address>>,
-           *   confirmation_number text
-           * ) WITH comment = 'Q9. Find guest by ID';
+           *   confirm_number text
+           * );
            */
           UserDefinedType  udtAddressType = 
                   cqlSession.getMetadata().getKeyspace(keyspaceName).get() // Retrieving KeySpaceMetadata
@@ -421,7 +421,7 @@ public class ReservationRepository {
                   .withColumn(EMAILS, DataTypes.setOf(DataTypes.TEXT))
                   .withColumn(PHONE_NUMBERS, DataTypes.listOf(DataTypes.TEXT))
                   .withColumn(ADDRESSES, DataTypes.mapOf(DataTypes.TEXT, udtAddressType, true))
-                  .withColumn(CONFIRMATION_NUMBER, DataTypes.TEXT)
+                  .withColumn(CONFIRM_NUMBER, DataTypes.TEXT)
                   .withComment("Q9. Find guest by ID")
                   .build());
            logger.debug("+ Table '{}' has been created (if needed)", TABLE_GUESTS.asInternal());
@@ -431,15 +431,15 @@ public class ReservationRepository {
     private void prepareStatements() {
         if (psExistReservation == null) {
             // TODO: Review creation of PreparedStatement using the QueryBuilder on 'reservations_by_confirmation'
-            psExistReservation = cqlSession.prepare(selectFrom(keyspaceName, TABLE_RESERVATION_BY_CONFI).column(CONFIRMATION_NUMBER)
-                                .where(column(CONFIRMATION_NUMBER).isEqualTo(bindMarker(CONFIRMATION_NUMBER)))
+            psExistReservation = cqlSession.prepare(selectFrom(keyspaceName, TABLE_RESERVATION_BY_CONFI).column(CONFIRM_NUMBER)
+                                .where(column(CONFIRM_NUMBER).isEqualTo(bindMarker(CONFIRM_NUMBER)))
                                 .build());
 
             // TODO: Create PreparedStatement using the QueryBuilder on 'reservations_by_confirmation'
             // Hint: this is quite similar to creating psExistReservation above, only we're selecting all()
             psFindReservation = cqlSession.prepare(
                                 selectFrom(keyspaceName, TABLE_RESERVATION_BY_CONFI).all()
-                                .where(column(CONFIRMATION_NUMBER).isEqualTo(bindMarker(CONFIRMATION_NUMBER)))
+                                .where(column(CONFIRM_NUMBER).isEqualTo(bindMarker(CONFIRM_NUMBER)))
                                 .build());
 
             // TODO: Create PreparedStatement using the QueryBuilder on 'reservations_by_hotel_date'
@@ -453,7 +453,7 @@ public class ReservationRepository {
             // TODO: Review creation of PreparedStatement using the QueryBuilder to delete from 'reservations_by_confirmation'
             psDeleteReservationByConfirmation = cqlSession.prepare(
                                 deleteFrom(keyspaceName, TABLE_RESERVATION_BY_CONFI)
-                                .where(column(CONFIRMATION_NUMBER).isEqualTo(bindMarker(CONFIRMATION_NUMBER)))
+                                .where(column(CONFIRM_NUMBER).isEqualTo(bindMarker(CONFIRM_NUMBER)))
                                 .build());
 
             // TODO: Create PreparedStatement using the QueryBuilder to delete from 'reservations_by_hotel_date'
@@ -470,13 +470,13 @@ public class ReservationRepository {
                     .value(START_DATE, bindMarker(START_DATE))
                     .value(END_DATE, bindMarker(END_DATE))
                     .value(ROOM_NUMBER, bindMarker(ROOM_NUMBER))
-                    .value(CONFIRMATION_NUMBER, bindMarker(CONFIRMATION_NUMBER))
+                    .value(CONFIRM_NUMBER, bindMarker(CONFIRM_NUMBER))
                     .value(GUEST_ID, bindMarker(GUEST_ID))
                     .build());
 
             // TODO: Create PreparedStatement using the QueryBuilder to insert into 'reservations_by_confirmation'
             psInsertReservationByConfirmation = cqlSession.prepare(QueryBuilder.insertInto(keyspaceName, TABLE_RESERVATION_BY_CONFI)
-                    .value(CONFIRMATION_NUMBER, bindMarker(CONFIRMATION_NUMBER))
+                    .value(CONFIRM_NUMBER, bindMarker(CONFIRM_NUMBER))
                     .value(HOTEL_ID, bindMarker(HOTEL_ID))
                     .value(START_DATE, bindMarker(START_DATE))
                     .value(END_DATE, bindMarker(END_DATE))
