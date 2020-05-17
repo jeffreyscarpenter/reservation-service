@@ -6,7 +6,7 @@
 
 	<groupId>com.cassandraguide</groupId>
 	<artifactId>reservation-service</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<packaging>jar</packaging>
 
 	<name>reservation-service</name>
@@ -29,6 +29,9 @@
 
 		<version.maven.plugin.compiler>3.8.0</version.maven.plugin.compiler>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<start-class>dev.cassandraguide.ReservationServiceApp</start-class>
+		<dockerfile-maven-version>1.4.13</dockerfile-maven-version>
+
 	</properties>
 
 	<dependencies>
@@ -152,34 +155,44 @@
 	</dependencies>
 
 	<build>
-
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<fork>true</fork>
+					<mainClass>${start-class}</mainClass>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>12</source>
-                    <target>12</target>
-                </configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+				</configuration>
             </plugin>
+
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>dockerfile-maven-plugin</artifactId>
+				<version>${dockerfile-maven-version}</version>
+				<configuration>
+					<repository>reservation-service</repository>
+					<tag>${project.version}</tag>
+					<buildArgs>
+						<JAR_FILE>${project.build.finalName}.jar</JAR_FILE>
+					</buildArgs>
+				</configuration>
+			</plugin>
         </plugins>
-
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-compiler-plugin</artifactId>
-					<configuration>
-						<release>${java.version}</release>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 	</build>
-
 
 </project>

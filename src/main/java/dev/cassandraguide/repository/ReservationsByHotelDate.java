@@ -55,7 +55,7 @@ public class ReservationsByHotelDate {
     private UUID guestId;
 
     /** Confirmation for this Reservation. */
-    private String confirmationNumber;
+    private String confirmNumber;
 
     /**
      * Default constructor
@@ -72,7 +72,7 @@ public class ReservationsByHotelDate {
         setHotelId(reservation.getHotelId());
         setGuestId(reservation.getGuestId());
         setRoomNumber(reservation.getRoomNumber());
-        setConfirmationNumber(reservation.getConfirmationNumber());
+        setConfirmNumber(reservation.getConfirmationNumber());
     }
 
     /**
@@ -176,23 +176,23 @@ public class ReservationsByHotelDate {
      * @return
      *       current value of 'confirmationNumber'
      */
-    public String getConfirmationNumber() {
-        return confirmationNumber;
+    public String getConfirmNumber() {
+        return confirmNumber;
     }
 
     /**
      * Setter accessor for attribute 'confirmationNumber'.
-     * @param confirmationNumber
+     * @param confirmNumber
      * 		new value for 'confirmationNumber '
      */
-    public void setConfirmationNumber(String confirmationNumber) {
-        this.confirmationNumber = confirmationNumber;
+    public void setConfirmNumber(String confirmNumber) {
+        this.confirmNumber = confirmNumber;
     }
 
     /** {@inheritDoc} */
     @Override
     public String toString() {
-        return "Confirmation Number = " + confirmationNumber +
+        return "Confirmation Number = " + confirmNumber +
                 ", Hotel ID: " + getHotelId() +
                 ", Start Date = " + getStartDate() +
                 ", End Date = " + getEndDate() +
