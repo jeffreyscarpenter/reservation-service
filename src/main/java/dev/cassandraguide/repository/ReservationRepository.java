@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2019 Jeff Carpenter
+ * Copyright (C) 2017-2020 Jeff Carpenter
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,7 +76,7 @@ public class ReservationRepository {
     public static final CqlIdentifier START_DATE                 = CqlIdentifier.fromCql("start_date");
     public static final CqlIdentifier END_DATE                   = CqlIdentifier.fromCql("end_date");
     public static final CqlIdentifier ROOM_NUMBER                = CqlIdentifier.fromCql("room_number");
-    public static final CqlIdentifier CONFIRMATION_NUMBER        = CqlIdentifier.fromCql("confirmation_number");
+    public static final CqlIdentifier CONFIRM_NUMBER             = CqlIdentifier.fromCql("confirm_number");
     public static final CqlIdentifier GUEST_ID                   = CqlIdentifier.fromCql("guest_id");
     public static final CqlIdentifier GUEST_LAST_NAME            = CqlIdentifier.fromCql("guest_last_name");
     public static final CqlIdentifier FIRSTNAME                  = CqlIdentifier.fromCql("first_name");
@@ -113,7 +113,6 @@ public class ReservationRepository {
         // TODO: note addition of method to create PreparedStatements (we will implement this)
         // Prepare Statements of reservation
         prepareStatements();
-
         logger.info("Application initialized.");
     }
     
@@ -289,7 +288,7 @@ public class ReservationRepository {
     private Reservation mapRowToReservation(Row row) {
         Reservation reservation = new Reservation();
         reservation.setHotelId(row.getString(HOTEL_ID));
-        reservation.setConfirmationNumber(row.getString(CONFIRMATION_NUMBER));
+        reservation.setConfirmationNumber(row.getString(CONFIRM_NUMBER));
         reservation.setGuestId(row.getUuid(GUEST_ID));
         reservation.setRoomNumber(row.getShort(ROOM_NUMBER));
         reservation.setStartDate(row.getLocalDate(START_DATE));
@@ -330,10 +329,10 @@ public class ReservationRepository {
          *  start_date date,
          *  end_date date,
          *  room_number smallint,
-         *  confirmation_number text,
+         *  confirm_number text,
          *  guest_id uuid,
          *  PRIMARY KEY ((hotel_id, start_date), room_number)
-         * ) WITH comment = 'Q7. Find reservations by hotel and date';
+         * );
          */
         cqlSession.execute(createTable(keyspaceName, TABLE_RESERVATION_BY_HOTEL_DATE)
                         .ifNotExists()
@@ -341,7 +340,7 @@ public class ReservationRepository {
                         .withPartitionKey(START_DATE, DataTypes.DATE)
                         .withClusteringColumn(ROOM_NUMBER, DataTypes.SMALLINT)
                         .withColumn(END_DATE, DataTypes.DATE)
-                        .withColumn(CONFIRMATION_NUMBER, DataTypes.TEXT)
+                        .withColumn(CONFIRM_NUMBER, DataTypes.TEXT)
                         .withColumn(GUEST_ID, DataTypes.UUID)
                         .withClusteringOrder(ROOM_NUMBER, ClusteringOrder.ASC)
                         .withComment("Q7. Find reservations by hotel and date")
@@ -350,7 +349,7 @@ public class ReservationRepository {
         
         /**
          * CREATE TABLE reservation.reservations_by_confirmation (
-         *   confirmation_number text PRIMARY KEY,
+         *   confirm_number text PRIMARY KEY,
          *   hotel_id text,
          *   start_date date,
          *   end_date date,
@@ -360,7 +359,7 @@ public class ReservationRepository {
          */
         cqlSession.execute(createTable(keyspaceName, TABLE_RESERVATION_BY_CONFI)
                 .ifNotExists()
-                .withPartitionKey(CONFIRMATION_NUMBER, DataTypes.TEXT)
+                .withPartitionKey(CONFIRM_NUMBER, DataTypes.TEXT)
                 .withColumn(HOTEL_ID, DataTypes.TEXT)
                 .withColumn(START_DATE, DataTypes.DATE)
                 .withColumn(END_DATE, DataTypes.DATE)
@@ -376,10 +375,10 @@ public class ReservationRepository {
           *  start_date date,
           *  end_date date,
           *  room_number smallint,
-          *  confirmation_number text,
+          *  confirm_number text,
           *  guest_id uuid,
           *  PRIMARY KEY ((guest_last_name), hotel_id)
-          * ) WITH comment = 'Q8. Find reservations by guest name';
+          * );
           */
          cqlSession.execute(createTable(keyspaceName, TABLE_RESERVATION_BY_GUEST)
                  .ifNotExists()
@@ -388,7 +387,7 @@ public class ReservationRepository {
                  .withColumn(START_DATE, DataTypes.DATE)
                  .withColumn(END_DATE, DataTypes.DATE)
                  .withColumn(ROOM_NUMBER, DataTypes.SMALLINT)
-                 .withColumn(CONFIRMATION_NUMBER, DataTypes.TEXT)
+                 .withColumn(CONFIRM_NUMBER, DataTypes.TEXT)
                  .withColumn(GUEST_ID, DataTypes.UUID)
                  .withComment("Q8. Find reservations by guest name")
                  .build());
@@ -403,8 +402,8 @@ public class ReservationRepository {
            *   emails set<text>,
            *   phone_numbers list<text>,
            *   addresses map<text, frozen<address>>,
-           *   confirmation_number text
-           * ) WITH comment = 'Q9. Find guest by ID';
+           *   confirm_number text
+           * );
            */
           UserDefinedType  udtAddressType = 
                   cqlSession.getMetadata().getKeyspace(keyspaceName).get() // Retrieving KeySpaceMetadata
@@ -418,7 +417,7 @@ public class ReservationRepository {
                   .withColumn(EMAILS, DataTypes.setOf(DataTypes.TEXT))
                   .withColumn(PHONE_NUMBERS, DataTypes.listOf(DataTypes.TEXT))
                   .withColumn(ADDRESSES, DataTypes.mapOf(DataTypes.TEXT, udtAddressType, true))
-                  .withColumn(CONFIRMATION_NUMBER, DataTypes.TEXT)
+                  .withColumn(CONFIRM_NUMBER, DataTypes.TEXT)
                   .withComment("Q9. Find guest by ID")
                   .build());
            logger.debug("+ Table '{}' has been created (if needed)", TABLE_GUESTS.asInternal());
@@ -430,26 +429,26 @@ public class ReservationRepository {
 
             // TODO: Review creation of PreparedStatements
             psExistReservation = cqlSession.prepare(
-                    "SELECT confirmation_number FROM reservations_by_confirmation WHERE confirmation_number = ?");
+                    "SELECT confirm_number FROM reservations_by_confirmation WHERE confirm_number = ?");
 
             psFindReservation = cqlSession.prepare(
-                    "SELECT * FROM reservations_by_confirmation WHERE confirmation_number = ?");
+                    "SELECT * FROM reservations_by_confirmation WHERE confirm_number = ?");
 
             psSearchReservation = cqlSession.prepare(
                     "SELECT * FROM reservations_by_hotel_date WHERE hotel_id = ? AND start_date = ?");
 
             psDeleteReservationByConfirmation = cqlSession.prepare(
-                    "DELETE FROM reservations_by_confirmation WHERE confirmation_number = ?");
+                    "DELETE FROM reservations_by_confirmation WHERE confirm_number = ?");
 
             psDeleteReservationByHotelDate = cqlSession.prepare(
                     "DELETE FROM reservations_by_hotel_date WHERE hotel_id = ? AND start_date = ? AND room_number = ?");
 
             psInsertReservationByHotelDate = cqlSession.prepare(
-                    "INSERT INTO reservations_by_hotel_date (confirmation_number, hotel_id, start_date, " +
+                    "INSERT INTO reservations_by_hotel_date (confirm_number, hotel_id, start_date, " +
                             "end_date, room_number, guest_id) VALUES (?, ?, ?, ?, ?, ?)");
 
             psInsertReservationByConfirmation = cqlSession.prepare(
-                    "INSERT INTO reservations_by_confirmation (confirmation_number, hotel_id, start_date, " +
+                    "INSERT INTO reservations_by_confirmation (confirm_number, hotel_id, start_date, " +
                             "end_date, room_number, guest_id) VALUES (?, ?, ?, ?, ?, ?)");
 
             // TODO: Can you create this one?
