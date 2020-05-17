@@ -1,0 +1,58 @@
+{
+  "properties": [
+    {
+      "name": "cassandra.contactPoint",
+      "type": "java.lang.String",
+      "defaultValue": "127.0.0.1"
+    },
+    {
+      "name": "cassandra.port",
+      "type": "java.lang.Integer",
+      "defaultValue": "9042"
+    },
+    {
+      "name": "cassandra.keyspaceName",
+      "type": "java.lang.String",
+      "defaultValue": "reservation"
+    },
+    {
+      "name": "cassandra.localDataCenterName",
+      "type": "java.lang.String",
+      "defaultValue": "datacenter1"
+    }
+    ,
+    {
+      "name": "cassandra.dropSchema",
+      "type": "java.lang.Boolean",
+      "defaultValue": "true"
+    }
+  ],
+  "hints": [
+    {
+      "name": "my.cassandra.contactPoint",
+      "values": [
+        {
+          "value": "127.0.0.1",
+          "description": "Ok this is localhosts."
+        },
+        {
+          "value": "something",
+          "description": "Does something."
+        }
+      ]
+    },
+    {
+      "name": "cassandra.dropSchema",
+      "values": [
+        {
+          "value": "true",
+          "description": "DROP Keyspace command will be executed at startup"
+        },
+        {
+          "value": "false",
+          "description": "DROP Keyspace command will NOT be executed at startup"
+        }
+      ]
+    }
+  ]
+}

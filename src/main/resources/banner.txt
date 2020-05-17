@@ -1,0 +1,15 @@
+${AnsiColor.RED} _________                                          .___              
+${AnsiColor.RED} \_   ___ \_____    ______ ___________    ____    __| _/___________   
+${AnsiColor.RED} /    \  \/\__  \  /  ___//  ___/\__  \  /    \  / __ |\_  __ \__  \  
+${AnsiColor.RED} \     \____/ __ \_\___ \ \___ \  / __ \|   |  \/ /_/ | |  | \// __ \_
+${AnsiColor.RED}  \______  (____  /____  >____  >(____  /___|  /\____ | |__|  (____  /
+${AnsiColor.RED}         \/     \/     \/     \/      \/     \/      \/            \/ 
+${AnsiColor.RED}   ________      .__    .___      
+${AnsiColor.RED}  /  _____/ __ __|__| __| _/____  
+${AnsiColor.RED} /   \  ___|  |  \  |/ __ |/ __ \ 
+${AnsiColor.RED} \    \_\  \  |  /  / /_/ \  ___/ 
+${AnsiColor.RED}  \______  /____/|__\____ |\___  >
+${AnsiColor.RED}         \/              \/    \/ 
+${AnsiColor.RED}
+${AnsiColor.BLUE} Cassandra, The Definitive Guide (http://shop.oreilly.com/product/0636920043041.do)
+${AnsiColor.BLUE} Author: Jeff Carpenter

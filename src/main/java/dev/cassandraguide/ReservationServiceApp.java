@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Jeff Carpenter
+ * Copyright (C) 2017-2020 Jeff Carpenter
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.cassandraguide.services.reservation;
+package dev.cassandraguide;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ReservationServiceApplication {
+public class ReservationServiceApp {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ReservationServiceApplication.class, args);
+		SpringApplication.run(ReservationServiceApp.class, args);
 	}
 }
