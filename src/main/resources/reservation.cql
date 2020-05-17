@@ -15,13 +15,13 @@ CREATE TABLE reservation.reservations_by_hotel_date (
     start_date date,
     end_date date,
     room_number smallint,
-    confirmation_number text,
+    confirm_number text,
     guest_id uuid,
     PRIMARY KEY ((hotel_id, start_date), room_number)
 );
 
 CREATE TABLE reservation.reservations_by_confirmation (
-    confirmation_number text PRIMARY KEY,
+    confirm_number text PRIMARY KEY,
     hotel_id text,
     start_date date,
     end_date date,
@@ -40,7 +40,7 @@ CREATE TABLE reservation.reservations_by_guest (
     start_date date,
     end_date date,
     room_number smallint,
-    confirmation_number text,
+    confirm_number text,
     guest_id uuid,
     PRIMARY KEY ((guest_last_name), hotel_id)
 );
@@ -60,7 +60,6 @@ CREATE TABLE reservation.guests (
     title text,
     emails set<text>,
     phone_numbers list<text>,
-    addresses map<text, frozen<address>>,
-    confirmation_number text
+    addresses map<text, frozen<address>>
 );
 
