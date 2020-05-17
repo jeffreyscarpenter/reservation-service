@@ -487,7 +487,7 @@ public class ReservationRepository {
                     .value(START_DATE, bindMarker(START_DATE))
                     .value(END_DATE, bindMarker(END_DATE))
                     .value(ROOM_NUMBER, bindMarker(ROOM_NUMBER))
-                    .value(CONFIRMATION_NUMBER, bindMarker(CONFIRMATION_NUMBER))
+                    .value(CONFIRM_NUMBER, bindMarker(CONFIRM_NUMBER))
                     .value(GUEST_ID, bindMarker(GUEST_ID))
                     .ifNotExists()
                     .build());
