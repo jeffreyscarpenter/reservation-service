@@ -1,12 +1,4 @@
-version: '2'
-
-networks:
-  back:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.10.0/24
-          gateway: 172.20.10.1
+version: '3'
 
 services:
   cassandra:
@@ -18,9 +10,6 @@ services:
       - 9042:9042
     ulimits:
       memlock: -1
-    networks:
-      back:
-        ipv4_address: 172.20.10.11
 
   spring_boot:
     depends_on:
@@ -30,11 +19,9 @@ services:
     ports:
       - "8080:8080"
     environment:
-      CASSANDRA_CONTACT_HOST: 172.20.10.11
+      CASSANDRA_CONTACT_HOST: cassandra
       CASSANDRA_CONTACT_PORT: 9042
-    networks:
-      back:
-        ipv4_address: 172.20.10.101
+
 
     # If you want to save data directories across runs
     # volumes:
