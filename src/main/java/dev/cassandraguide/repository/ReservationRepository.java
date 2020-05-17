@@ -132,8 +132,8 @@ public class ReservationRepository {
 
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-        objectMapper.enable(SerializationFeature.INDENT_OUTPUT)
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 
         // Will create tables (if they do not exist)
         createReservationTables();
