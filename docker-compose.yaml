@@ -14,6 +14,25 @@ services:
     # volumes:
     #   - ~/cassandra/:/var/lib/cassandra/data
 
+  # Ensure consistency in Kafka World
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - 2181:2181
+
+  # Start a Kafka Broker
+  kafka:
+    image: wurstmeister/kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_LISTENERS: PLAINTEXT://:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_CREATE_TOPICS: "reservation:1:1"
+    ports:
+      - 9092:9092
+
   spring_boot:
     depends_on:
       - cassandra
