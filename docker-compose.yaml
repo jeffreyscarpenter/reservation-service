@@ -28,8 +28,6 @@ services:
 
   zookeeper:
     image: confluentinc/cp-zookeeper:5.3.1
-    hostname: zookeeper
-    container_name: zookeeper
     ports:
       - "2181:2181"
     environment:
@@ -38,8 +36,6 @@ services:
 
   broker:
     image: confluentinc/cp-enterprise-kafka:5.3.1
-    hostname: broker
-    container_name: broker
     depends_on:
       - zookeeper
     ports:
@@ -61,8 +57,6 @@ services:
 
   connect:
     image: confluentinc/cp-kafka-connect-base:5.3.1
-    hostname: connect
-    container_name: connect
     depends_on:
       - zookeeper
       - broker
@@ -97,8 +91,6 @@ services:
 
   control-center:
     image: confluentinc/cp-enterprise-control-center:5.3.1
-    hostname: control-center
-    container_name: control-center
     depends_on:
       - zookeeper
       - broker
