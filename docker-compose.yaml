@@ -3,8 +3,6 @@ version: '3'
 services:
   dse:
     image: datastaxlabs/dse-cdc-server:6.8.0-20190925
-    hostname: dse
-    container_name: dse
     environment:
       - DS_LICENSE=accept
     volumes:
