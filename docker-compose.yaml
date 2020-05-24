@@ -1,8 +1,13 @@
 version: '3'
 
 services:
-  dse:
+  cassandra:
     image: datastaxlabs/dse-cdc-server:6.8.0-20190925
+    ports:
+      - 7000:7000
+      - 7001:7001
+      - 7199:7199
+      - 9042:9042
     environment:
       - DS_LICENSE=accept
     volumes:
@@ -12,13 +17,13 @@ services:
 
   spring_boot:
     depends_on:
-      - dse
+      - cassandra
     build: .
     image: reservation-service:latest
     ports:
       - "8080:8080"
     environment:
-      CASSANDRA_CONTACT_HOST: dse
+      CASSANDRA_CONTACT_HOST: cassandra
       CASSANDRA_CONTACT_PORT: 9042
 
   zookeeper:
