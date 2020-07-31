@@ -1,7 +1,8 @@
-version: '2'
+version: '3'
+
 services:
   cassandra:
-    image: cassandra:3.11.4
+    image: cassandra:3.11.6
     ports:
       - 7000:7000
       - 7001:7001
@@ -12,8 +13,38 @@ services:
     # If you want to save data directories across runs
     # volumes:
     #   - ~/cassandra/:/var/lib/cassandra/data
- 
-# If you want to have cqksh
-#  docker exec -it `docker ps | grep cassandra:3.11.4 | cut -b 1-12` cqlsh
+
+  # Ensure consistency in Kafka World
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - 2181:2181
+
+  # Start a Kafka Broker
+  kafka:
+    image: wurstmeister/kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_LISTENERS: PLAINTEXT://:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_CREATE_TOPICS: "reservation:1:1"
+    ports:
+      - 9092:9092
+
+  spring_boot:
+    depends_on:
+      - cassandra
+    build: .
+    image: reservation-service:latest
+    ports:
+      - "8080:8080"
+    environment:
+      CASSANDRA_CONTACT_HOST: cassandra
+      CASSANDRA_CONTACT_PORT: 9042
+
+# To run cqlsh
+#  docker-compose exec -it cassandra cqlsh
     
   
